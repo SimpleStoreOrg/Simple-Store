@@ -1,5 +1,14 @@
 bin/
 obj/
-/packages/
-riderModule.iml
-/_ReSharper.Caches/
+
+*.user
+*.suo
+
+*.log
+
+.DS_Store
+
+.vs/
+.idea/
+
+*.db
