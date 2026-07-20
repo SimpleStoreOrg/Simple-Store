@@ -45,7 +45,9 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserR
         user.Name = request.Request.Name;
         user.Surname = request.Request.Surname;
         user.Email = request.Request.Email;
+        user.Role = request.Request.Role;
         user.PhoneNumber = request.Request.PhoneNumber;
+        user.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -60,7 +62,8 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserR
             Role = user.Role,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
         };
     }
 }

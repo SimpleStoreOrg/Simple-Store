@@ -42,7 +42,9 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, PagedRe
                 Surname = u.Surname,
                 Role = u.Role,
                 Email = u.Email,
-                PhoneNumber = u.PhoneNumber
+                PhoneNumber = u.PhoneNumber,
+                CreatedAt = u.CreatedAt,
+                UpdatedAt = u.UpdatedAt
             }).ToListAsync(cancellationToken);
         
         _logger.LogInformation("Returned {Count} customers out of {Total}", users.Count, totalCount);

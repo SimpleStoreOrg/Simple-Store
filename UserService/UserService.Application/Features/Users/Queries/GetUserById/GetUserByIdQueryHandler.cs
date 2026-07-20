@@ -34,7 +34,9 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserRes
             Surname = user.Surname,
             Role = user.Role,
             Email = user.Email,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
         };
     }
 }

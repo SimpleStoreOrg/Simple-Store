@@ -41,7 +41,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserR
             Role = request.Request.Role,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Email = email,
-            PhoneNumber = phoneNumber
+            PhoneNumber = phoneNumber,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _dbContext.Users.AddAsync(user, cancellationToken);
@@ -57,7 +58,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserR
             Role = user.Role,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = user.CreatedAt
         };
     }
 }
