@@ -1,0 +1,13 @@
+using OrderService.Domain.Enums;
+
+namespace OrderService.Application.DTOs.Response;
+
+public class OrderResponse
+{
+    public long Id { get; set; }
+    public long CustomerId { get; set; }
+    public long EmployeeId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public OrderStatus Status { get; set; }
+    public IEnumerable<OrderItemResponse> Items { get; set; }
+}

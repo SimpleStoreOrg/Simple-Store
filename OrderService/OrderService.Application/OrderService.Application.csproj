@@ -7,10 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="DTOs\Request\" />
-      <Folder Include="DTOs\Response\" />
-      <Folder Include="Exceptions\" />
-      <Folder Include="Features\" />
+      <Folder Include="Features\Orders\Queries\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -33,6 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\ProductService\ProductService.Application\ProductService.Application.csproj" />
       <ProjectReference Include="..\OrderService.Domain\OrderService.Domain.csproj" />
     </ItemGroup>
 
