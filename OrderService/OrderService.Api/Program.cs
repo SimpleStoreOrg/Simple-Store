@@ -1,12 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using OrderService.Application;
 using OrderService.Application.Interfaces.Data;
+using OrderService.Application.Interfaces.External;
 using OrderService.Infrastructure;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+builder.Services.AddRefitClient<IUserApi>().ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7100"));
+
+builder.Services.AddRefitClient<IProductApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7100");
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
