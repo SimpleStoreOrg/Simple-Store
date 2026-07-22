@@ -1,12 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OrderService.Application.DTOs.External;
 using OrderService.Application.DTOs.Response;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Application.Interfaces.External;
 using OrderService.Domain.Enums;
-using ProductNotFoundException = ProductService.Application.Exceptions.ProductNotFoundException;
 
 namespace OrderService.Application.Features.Commands;
 
@@ -72,8 +72,14 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
                 {
                     throw new InsufficientStockException(item.ProductId, product.Stock, item.Quantity);
                 }
-                
-                product.Stock -= item.Quantity;
+            }
+
+            foreach (var item in order.OrderItems)
+            {
+                await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest()
+                {
+                    Quantity = item.Quantity
+                });
             }
 
             order.Status = OrderStatus.Completed;

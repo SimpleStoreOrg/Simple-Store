@@ -7,4 +7,7 @@ public interface IProductApi
 {
     [Get("/api/Product/{id}")]
     Task<ProductResponse> GetProductById(long id);
+
+    [Put("/api/Product/internal/{id}/stock")]
+    Task UpdateStock(long id, UpdateStockRequest request);
 }

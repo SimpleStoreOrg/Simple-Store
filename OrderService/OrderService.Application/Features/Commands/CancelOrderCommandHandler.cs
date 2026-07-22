@@ -35,7 +35,7 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
 
         if (order.Status == OrderStatus.CancelledByShop || order.Status == OrderStatus.CancelledByCustomer)
         {
-            throw new InvalidOrderException("Order is cancelled by Shop");
+            throw new InvalidOrderException("Order is cancelled by Shop or Customer");
         }
         
         if (order.Status != OrderStatus.New)
