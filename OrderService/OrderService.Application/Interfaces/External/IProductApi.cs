@@ -5,6 +5,6 @@ namespace OrderService.Application.Interfaces.External;
 
 public interface IProductApi
 {
-    [Get("/api/products/{id}")]
+    [Get("/api/Product/{id}")]
     Task<ProductResponse> GetProductById(long id);
 }

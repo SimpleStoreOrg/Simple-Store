@@ -1,5 +1,3 @@
-using OrderService.Domain.Entities;
-
 namespace OrderService.Application.DTOs.Request;
 
 public class CreateOrderRequest
