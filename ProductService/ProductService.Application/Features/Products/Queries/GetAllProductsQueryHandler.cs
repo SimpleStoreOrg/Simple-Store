@@ -5,7 +5,9 @@ using ProductService.Application.Common;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Products.Queries.GetAllProducts;
+namespace ProductService.Application.Features.Products.Queries;
+
+public record GetAllProductsQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<ProductResponse>>;
 
 public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, PagedResponse<ProductResponse>>
 {

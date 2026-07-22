@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Commands;
+namespace ProductService.Application.Features.Products.Commands;
 
 public record UpdateStockCommand(long ProductId, decimal Quantity) : IRequest;
 

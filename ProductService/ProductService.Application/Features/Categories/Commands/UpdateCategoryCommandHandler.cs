@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Categories.Commands.UpdateCategory;
+namespace ProductService.Application.Features.Categories.Commands;
+public record UpdateCategoryCommand(long CategoryId, UpdateCategoryRequest Request) : IRequest<CategoryResponse>;
 
 public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, CategoryResponse>
 {

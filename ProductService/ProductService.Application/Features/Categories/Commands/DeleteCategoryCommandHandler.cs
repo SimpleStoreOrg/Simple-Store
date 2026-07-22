@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Categories.Commands.DeleteCategory;
+namespace ProductService.Application.Features.Categories.Commands;
+
+public record DeleteCategoryCommand(long CategoryId) : IRequest,IRequest<bool>;
 
 public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, bool>
 {

@@ -5,7 +5,9 @@ using ProductService.Application.Common;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Categories.Queries.GetAllCategories;
+namespace ProductService.Application.Features.Categories.Queries;
+
+public record GetAllCategoriesQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<CategoryResponse>>;
 
 public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, PagedResponse<CategoryResponse>>
 {

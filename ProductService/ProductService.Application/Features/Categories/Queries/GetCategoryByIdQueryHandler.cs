@@ -5,7 +5,9 @@ using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Categories.Queries.GetCategoryById;
+namespace ProductService.Application.Features.Categories.Queries;
+
+public record GetCategoryByIdQuery(long CategoryId) : IRequest<CategoryResponse>;
 
 public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, CategoryResponse>
 {

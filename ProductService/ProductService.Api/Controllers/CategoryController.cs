@@ -3,11 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
-using ProductService.Application.Features.Categories.Commands.CreateCategory;
-using ProductService.Application.Features.Categories.Commands.DeleteCategory;
-using ProductService.Application.Features.Categories.Commands.UpdateCategory;
-using ProductService.Application.Features.Categories.Queries.GetAllCategories;
-using ProductService.Application.Features.Categories.Queries.GetCategoryById;
+using ProductService.Application.Features.Categories.Commands;
+using ProductService.Application.Features.Categories.Queries;
 
 namespace ProductService.Api.Controllers;
 [ApiController]

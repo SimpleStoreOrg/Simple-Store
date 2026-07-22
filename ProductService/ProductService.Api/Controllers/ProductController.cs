@@ -3,12 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
-using ProductService.Application.Features.Commands;
-using ProductService.Application.Features.Products.Commands.CreateProduct;
-using ProductService.Application.Features.Products.Commands.DeleteProduct;
-using ProductService.Application.Features.Products.Commands.UpdateProduct;
-using ProductService.Application.Features.Products.Queries.GetAllProducts;
-using ProductService.Application.Features.Products.Queries.GetProductById;
+using ProductService.Application.Features.Products.Commands;
+using ProductService.Application.Features.Products.Queries;
 
 namespace ProductService.Api.Controllers;
 [ApiController]

@@ -5,7 +5,9 @@ using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Products.Queries.GetProductById;
+namespace ProductService.Application.Features.Products.Queries;
+
+public record GetProductByIdQuery(int ProductId) : IRequest<ProductResponse>;
 
 public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductResponse>
 {

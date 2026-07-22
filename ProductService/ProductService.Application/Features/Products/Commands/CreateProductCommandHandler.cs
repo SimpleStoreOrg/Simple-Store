@@ -1,14 +1,17 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 using ProductService.Domain.Entities;
 
-namespace ProductService.Application.Features.Products.Commands.CreateProduct;
+namespace ProductService.Application.Features.Products.Commands;
 
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, ProductResponse>
+public record CreateProductCommand(CreateProductRequest Request) : IRequest<ProductResponse>;
+
+public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, ProductResponse>
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<CreateProductCommandHandler> _logger;

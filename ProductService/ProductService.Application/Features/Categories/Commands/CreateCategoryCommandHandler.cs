@@ -1,12 +1,15 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 using ProductService.Domain.Entities;
 
-namespace ProductService.Application.Features.Categories.Commands.CreateCategory;
+namespace ProductService.Application.Features.Categories.Commands;
+
+public record CreateCategoryCommand(CreateCategoryRequest Request) : IRequest<CategoryResponse>;
 
 public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryResponse>
 {

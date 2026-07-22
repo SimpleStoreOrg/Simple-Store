@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
 
-namespace ProductService.Application.Features.Products.Commands.UpdateProduct;
+namespace ProductService.Application.Features.Products.Commands;
+
+public record UpdateProductCommand(int ProductId, UpdateProductRequest Request) : IRequest<ProductResponse>;
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, ProductResponse>
 {
