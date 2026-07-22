@@ -10,11 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-builder.Services.AddRefitClient<IUserApi>().ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7100"));
+builder.Services.AddRefitClient<IUserApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7003");
+});
 
 builder.Services.AddRefitClient<IProductApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7100");
+    c.BaseAddress = new Uri("https://localhost:7002");
 });
 
 builder.Services.AddEndpointsApiExplorer();

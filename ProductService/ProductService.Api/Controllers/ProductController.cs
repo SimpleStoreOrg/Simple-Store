@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
+using ProductService.Application.Features.Commands;
 using ProductService.Application.Features.Products.Commands.CreateProduct;
 using ProductService.Application.Features.Products.Commands.DeleteProduct;
 using ProductService.Application.Features.Products.Commands.UpdateProduct;
@@ -55,5 +56,12 @@ public class ProductController : ControllerBase
     {
         await _mediator.Send(new DeleteProductCommand(id));
         return NoContent();
+    }
+
+    [HttpPut("internal/{id}/stock")]
+    public async Task<IActionResult> UpdateStock(long id, UpdateStockRequest request)
+    {
+        await _mediator.Send(new UpdateStockCommand(id, request.Quantity));
+        return Ok();
     }
 }
