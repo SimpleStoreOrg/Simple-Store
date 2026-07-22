@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.Users.Commands.UpdateUser;
+namespace UserService.Application.Features.Users.Commands;
+
+public record UpdateUserCommand(long UserId, UpdateUserRequest Request) : IRequest<UserResponse>;
 
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserResponse>
 {

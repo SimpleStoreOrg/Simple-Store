@@ -5,7 +5,9 @@ using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.Users.Queries.GetUserById;
+namespace UserService.Application.Features.Users.Queries;
+
+public record GetUserByIdQuery(long UserId) : IRequest<UserResponse>;
 
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserResponse>
 {

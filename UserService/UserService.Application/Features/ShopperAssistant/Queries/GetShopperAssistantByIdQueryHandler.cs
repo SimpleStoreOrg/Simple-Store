@@ -5,7 +5,9 @@ using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.ShopperAssistant.Queries.GetShopperAssistantById;
+namespace UserService.Application.Features.ShopperAssistant.Queries;
+
+public record GetShopperAssistantByIdQuery(long ShopperAssistantId) : IRequest<UserResponse>;
 
 public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAssistantByIdQuery, UserResponse>
 {

@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.Users.Commands.DeleteUser;
+namespace UserService.Application.Features.Users.Commands;
+
+public record DeleteUserCommand(long UserId) : IRequest, IRequest<bool>;
 
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, bool>
 {

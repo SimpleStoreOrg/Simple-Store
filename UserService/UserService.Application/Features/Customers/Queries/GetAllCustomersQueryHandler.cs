@@ -5,7 +5,9 @@ using UserService.Application.Common;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.Customers.Queries.GetAllCustomers;
+namespace UserService.Application.Features.Customers.Queries;
+
+public record GetAllCustomersQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<UserResponse>>;
 
 public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery, PagedResponse<UserResponse>>
 {

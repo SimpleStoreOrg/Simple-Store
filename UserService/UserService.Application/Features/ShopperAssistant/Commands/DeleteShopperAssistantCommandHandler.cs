@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.ShopperAssistant.Commands.DeleteShopperAssistant;
+namespace UserService.Application.Features.ShopperAssistant.Commands;
+
+public record DeleteShopperAssistantCommand(long ShopperAssistantId) : IRequest, IRequest<bool>;
 
 public class DeleteShopperAssistantCommandHandler : IRequestHandler<DeleteShopperAssistantCommand, bool>
 {

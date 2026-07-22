@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.Customers.Commands.DeleteCustomer;
+namespace UserService.Application.Features.Customers.Commands;
+
+public record DeleteCustomerCommand(long CustomerId) : IRequest, IRequest<bool>;
 
 public class DeleteCustomerCommandHandler : IRequestHandler<DeleteCustomerCommand, bool>
 {

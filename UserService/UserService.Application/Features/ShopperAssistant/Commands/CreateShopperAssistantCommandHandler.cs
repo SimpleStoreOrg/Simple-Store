@@ -1,12 +1,15 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 using UserService.Domain.Entities;
 
-namespace UserService.Application.Features.ShopperAssistant.Commands.CreateShopperAssistant;
+namespace UserService.Application.Features.ShopperAssistant.Commands;
+
+public record CreateShopperAssistantCommand(CreateUserRequest Request) : IRequest<UserResponse>;
 
 public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShopperAssistantCommand, UserResponse>
 {

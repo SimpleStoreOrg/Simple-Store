@@ -5,7 +5,9 @@ using UserService.Application.Common;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.ShopperAssistant.Queries.GetAllShopperAssistants;
+namespace UserService.Application.Features.ShopperAssistant.Queries;
+
+public record GetAllShopperAssistantsQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<UserResponse>>;
 
 public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopperAssistantsQuery, PagedResponse<UserResponse>>
 {

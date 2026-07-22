@@ -2,11 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
-using UserService.Application.Features.Users.Commands.CreateUser;
-using UserService.Application.Features.Users.Commands.DeleteUser;
-using UserService.Application.Features.Users.Commands.UpdateUser;
-using UserService.Application.Features.Users.Queries.GetAllUsers;
-using UserService.Application.Features.Users.Queries.GetUserById;
+using UserService.Application.Features.Users.Commands;
+using UserService.Application.Features.Users.Queries;
 
 namespace UserService.Api.Controllers;
 [ApiController]

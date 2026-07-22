@@ -1,12 +1,15 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 using UserService.Domain.Entities;
 
-namespace UserService.Application.Features.Users.Commands.CreateUser;
+namespace UserService.Application.Features.Users.Commands;
+
+public record CreateUserCommand(CreateUserRequest Request) : IRequest<UserResponse>;
 
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserResponse>
 {
