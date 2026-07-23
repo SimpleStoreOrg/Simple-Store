@@ -1,5 +1,8 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Application;
+using OrderService.Application.Features.Validators;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Application.Interfaces.External;
 using OrderService.Infrastructure;
@@ -9,6 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+builder.Services.AddFluentValidationAutoValidation();
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();
 
 builder.Services.AddRefitClient<IUserApi>().ConfigureHttpClient(c =>
 {
