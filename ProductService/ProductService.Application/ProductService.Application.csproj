@@ -28,8 +28,4 @@
       <ProjectReference Include="..\ProductService.Domain\ProductService.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\Queries\" />
-    </ItemGroup>
-
 </Project>

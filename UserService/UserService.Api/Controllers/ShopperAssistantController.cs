@@ -2,15 +2,10 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
-using UserService.Application.Features.Customers.Commands.CreateCustomer;
-using UserService.Application.Features.Customers.Commands.DeleteCustomer;
-using UserService.Application.Features.Customers.Commands.UpdateCustomer;
-using UserService.Application.Features.Customers.Queries.GetAllCustomers;
-using UserService.Application.Features.Customers.Queries.GetCustomerById;
-using UserService.Application.Features.ShopperAssistant.Commands.CreateShopperAssistant;
-using UserService.Application.Features.ShopperAssistant.Commands.UpdateShopperAssistant;
-using UserService.Application.Features.ShopperAssistant.Queries.GetAllShopperAssistants;
-using UserService.Application.Features.ShopperAssistant.Queries.GetShopperAssistantById;
+using UserService.Application.Features.Customers.Commands;
+using UserService.Application.Features.ShopperAssistant.Commands;
+using UserService.Application.Features.ShopperAssistant.Queries;
+
 
 namespace UserService.Api.Controllers;
 
