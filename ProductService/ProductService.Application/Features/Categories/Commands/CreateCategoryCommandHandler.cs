@@ -37,7 +37,8 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         var category = new CategoryEntity()
         {
             Name = request.Request.Name,
-            ParentCategoryId = request.Request.ParentCategoryId
+            ParentCategoryId = request.Request.ParentCategoryId,
+            CreatedAt = DateTime.UtcNow
         };
         
         await _dbContext.Categories.AddAsync(category, cancellationToken);
@@ -50,7 +51,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
             Id = category.Id,
             Name = category.Name,
             ParentCategoryId = category.ParentCategoryId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = category.CreatedAt
         };
     }
 }
