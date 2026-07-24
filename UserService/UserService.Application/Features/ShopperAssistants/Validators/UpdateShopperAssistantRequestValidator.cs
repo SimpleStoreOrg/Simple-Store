@@ -3,7 +3,7 @@ using UserService.Application.DTOs.Request;
 
 namespace UserService.Application.Features.ShopperAssistants.Validators;
 
-public class UpdateShopperAssistantRequestValidator : AbstractValidator<UpdateUserRequest>
+public class UpdateShopperAssistantRequestValidator : AbstractValidator<UpdateShopperAssistantRequest>
 {
     public UpdateShopperAssistantRequestValidator()
     {
@@ -21,5 +21,8 @@ public class UpdateShopperAssistantRequestValidator : AbstractValidator<UpdateUs
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Number is required");
+        
+        RuleFor(x => x.Position)
+            .IsInEnum().WithMessage("Invalid shopper assistant position");
     }
 }
