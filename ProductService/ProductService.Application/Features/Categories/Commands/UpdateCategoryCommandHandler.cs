@@ -28,7 +28,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
 
         var exists = await _dbContext.Categories
             .AnyAsync(c =>
-                c.Id != request.CategoryId && c.Name == name, cancellationToken);
+                c.Id != request.CategoryId && c.Name.Trim().ToLower() == name, cancellationToken);
 
         if (exists)
         {
@@ -47,6 +47,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
 
         category.Name = request.Request.Name;
         category.ParentCategoryId = request.Request.ParentCategoryId;
+        category.UpdatedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Category {CategoryId} updated successfully. Name: {CategoryName}", request.CategoryId,
@@ -57,7 +58,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
             Id = category.Id,
             Name = category.Name,
             ParentCategoryId = category.ParentCategoryId,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = category.UpdatedAt
         };
     }
 }

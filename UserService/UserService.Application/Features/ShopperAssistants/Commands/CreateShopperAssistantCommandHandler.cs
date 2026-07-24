@@ -6,12 +6,13 @@ using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 using UserService.Domain.Entities;
+using UserService.Domain.Enums;
 
-namespace UserService.Application.Features.ShopperAssistant.Commands;
+namespace UserService.Application.Features.ShopperAssistants.Commands;
 
-public record CreateShopperAssistantCommand(CreateUserRequest Request) : IRequest<UserResponse>;
+public record CreateShopperAssistantCommand(CreateShopperAssistantRequest Request) : IRequest<ShopperAssistantResponse>;
 
-public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShopperAssistantCommand, UserResponse>
+public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShopperAssistantCommand, ShopperAssistantResponse>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<CreateShopperAssistantCommandHandler> _logger;
@@ -22,7 +23,7 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
         _logger = logger;
     }
     
-    public async Task<UserResponse> Handle(CreateShopperAssistantCommand request, CancellationToken cancellationToken)
+    public async Task<ShopperAssistantResponse> Handle(CreateShopperAssistantCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Creating Shopper Assistant. Name: {Name}, Surname: {Surname}", request.Request.Name,
             request.Request.Surname);
@@ -45,10 +46,11 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
             Name = request.Request.Name,
             Surname = request.Request.Surname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
-            Role = request.Request.Role,
+            Role = RoleStatus.ShopperAssistant,
+            Position = request.Request.Position,
             Email = email,
             PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(5)
         };
 
         await _dbContext.ShopperAssistants.AddAsync(shopperAssistant, cancellationToken);
@@ -56,12 +58,13 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
         
         _logger.LogInformation("Shopper Assistant created successfully with ID: {Id}", shopperAssistant.Id);
 
-        return new UserResponse()
+        return new ShopperAssistantResponse()
         {
             Id = shopperAssistant.Id,
             Name = shopperAssistant.Name,
             Surname = shopperAssistant.Surname,
             Role = shopperAssistant.Role,
+            Position = shopperAssistant.Position,
             Email = shopperAssistant.Email,
             PhoneNumber = shopperAssistant.PhoneNumber,
             CreatedAt = shopperAssistant.CreatedAt
