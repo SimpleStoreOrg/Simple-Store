@@ -5,11 +5,11 @@ using UserService.Application.Common;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.ShopperAssistant.Queries;
+namespace UserService.Application.Features.ShopperAssistants.Queries;
 
-public record GetAllShopperAssistantsQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<UserResponse>>;
+public record GetAllShopperAssistantsQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<ShopperAssistantResponse>>;
 
-public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopperAssistantsQuery, PagedResponse<UserResponse>>
+public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopperAssistantsQuery, PagedResponse<ShopperAssistantResponse>>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetAllShopperAssistantsQueryHandler> _logger;
@@ -19,7 +19,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
         _dbContext = dbContext;
         _logger = logger;
     }
-    public async Task<PagedResponse<UserResponse>> Handle(GetAllShopperAssistantsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<ShopperAssistantResponse>> Handle(GetAllShopperAssistantsQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching Shopper Assistants. Page: {PageNumber}, Size: {PageSize}", request.PageNumber,
             request.PageSize);
@@ -28,7 +28,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
         {
             _logger.LogWarning("Invalid pagination parameters. Page: {PageNumber}, Size: {PageSize}",
                 request.PageNumber, request.PageSize);
-            return new PagedResponse<UserResponse>();
+            return new PagedResponse<ShopperAssistantResponse>();
         }
 
         var query = _dbContext.ShopperAssistants.AsQueryable();
@@ -39,12 +39,13 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
             .OrderBy(e => e.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(e => new UserResponse()
+            .Select(e => new ShopperAssistantResponse()
             {
                 Id = e.Id,
                 Name = e.Name,
                 Surname = e.Surname,
                 Role = e.Role,
+                Position = e.Position,
                 Email = e.Email,
                 PhoneNumber = e.PhoneNumber,
                 CreatedAt = e.CreatedAt,
@@ -53,7 +54,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
         
         _logger.LogInformation("Returned {Count} Shopper Assistants out of {Total}", shopperAssistants.Count, totalCount);
         
-        return new PagedResponse<UserResponse>()
+        return new PagedResponse<ShopperAssistantResponse>()
         {
             Items = shopperAssistants,
             PageNumber = request.PageNumber,

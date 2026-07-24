@@ -53,7 +53,6 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
         customer.Name = request.Request.Name;
         customer.Surname = request.Request.Surname;
         customer.Email = email;
-        customer.Role = request.Request.Role;
         customer.PhoneNumber = phoneNumber;
         customer.UpdatedAt = DateTime.UtcNow;
 

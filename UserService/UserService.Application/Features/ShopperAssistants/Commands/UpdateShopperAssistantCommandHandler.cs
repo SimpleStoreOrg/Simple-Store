@@ -5,12 +5,13 @@ using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
+using UserService.Domain.Enums;
 
-namespace UserService.Application.Features.ShopperAssistant.Commands;
+namespace UserService.Application.Features.ShopperAssistants.Commands;
 
-public record UpdateShopperAssistantCommand(long ShopperAssistantId, UpdateUserRequest Request) : IRequest<UserResponse>;
+public record UpdateShopperAssistantCommand(long ShopperAssistantId, UpdateShopperAssistantRequest Request) : IRequest<ShopperAssistantResponse>;
 
-public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShopperAssistantCommand, UserResponse>
+public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShopperAssistantCommand, ShopperAssistantResponse>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<UpdateShopperAssistantCommandHandler> _logger;
@@ -20,7 +21,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         _dbContext = dbContext;
         _logger = logger;
     }
-    public async Task<UserResponse> Handle(UpdateShopperAssistantCommand request, CancellationToken cancellationToken)
+    public async Task<ShopperAssistantResponse> Handle(UpdateShopperAssistantCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Updating Shopper Assistant with ID: {Id}", request.ShopperAssistantId);
 
@@ -51,9 +52,10 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         shopperAssistant.Name = request.Request.Name;
         shopperAssistant.Surname = request.Request.Surname;
         shopperAssistant.Email = email;
-        shopperAssistant.Role = request.Request.Role;
+        shopperAssistant.Role = RoleStatus.ShopperAssistant;
+        shopperAssistant.Position = request.Request.Position;
         shopperAssistant.PhoneNumber = phoneNumber;
-        shopperAssistant.UpdatedAt = DateTime.UtcNow;
+        shopperAssistant.UpdatedAt = DateTime.UtcNow.AddHours(5);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -61,12 +63,14 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
             "Shopper Assistant {Id} updated successfully. Name: {Name}, Surname: {Surname}", request.ShopperAssistantId,
             shopperAssistant.Name, shopperAssistant.Surname);
 
-        return new UserResponse()
+        return new ShopperAssistantResponse()
         {
             Id = request.ShopperAssistantId,
             Name = shopperAssistant.Name,
             Surname = shopperAssistant.Surname,
             Email = shopperAssistant.Email,
+            Role = shopperAssistant.Role,
+            Position = shopperAssistant.Position,
             PhoneNumber = shopperAssistant.PhoneNumber,
             CreatedAt = shopperAssistant.CreatedAt,
             UpdatedAt = shopperAssistant.UpdatedAt

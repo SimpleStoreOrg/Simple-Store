@@ -21,8 +21,4 @@
         <ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\ShopperAssistant\Validators\" />
-    </ItemGroup>
-
 </Project>
