@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Features.Users.Queries;
@@ -6,6 +7,7 @@ using UserService.Application.Features.Users.Queries;
 namespace UserService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "ShopperAssistant")]
 public class UserController : ControllerBase
 {
     private readonly IMediator _mediator;
