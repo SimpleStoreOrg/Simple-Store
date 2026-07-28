@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Features.Customers.Commands;
-using UserService.Application.Features.ShopperAssistant.Commands;
-using UserService.Application.Features.ShopperAssistant.Queries;
+using UserService.Application.Features.ShopperAssistants.Commands;
+using UserService.Application.Features.ShopperAssistants.Queries;
 
 
 namespace UserService.Api.Controllers;
@@ -36,14 +36,14 @@ public class ShopperAssistantController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateShopperAssistant(CreateUserRequest request)
+    public async Task<IActionResult> CreateShopperAssistant(CreateShopperAssistantRequest request)
     {
         var result = await _mediator.Send(new CreateShopperAssistantCommand(request));
         return Ok(result);
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateShopperAssistant(long id, UpdateUserRequest request)
+    public async Task<IActionResult> UpdateShopperAssistant(long id, UpdateShopperAssistantRequest request)
     {
         var result = await _mediator.Send(new UpdateShopperAssistantCommand(id, request));
         return Ok(result);

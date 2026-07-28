@@ -46,7 +46,6 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
         {
             Name = request.Request.Name,
             Surname = request.Request.Surname,
-            Role = request.Request.Role,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Email = email,
             PhoneNumber = phoneNumber,

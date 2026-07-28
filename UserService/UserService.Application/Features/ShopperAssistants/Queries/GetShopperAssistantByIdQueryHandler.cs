@@ -5,11 +5,11 @@ using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 
-namespace UserService.Application.Features.ShopperAssistant.Queries;
+namespace UserService.Application.Features.ShopperAssistants.Queries;
 
-public record GetShopperAssistantByIdQuery(long ShopperAssistantId) : IRequest<UserResponse>;
+public record GetShopperAssistantByIdQuery(long ShopperAssistantId) : IRequest<ShopperAssistantResponse>;
 
-public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAssistantByIdQuery, UserResponse>
+public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAssistantByIdQuery, ShopperAssistantResponse>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetShopperAssistantByIdQueryHandler> _logger;
@@ -19,7 +19,7 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
         _dbContext = dbContext;
         _logger = logger;
     }
-    public async Task<UserResponse> Handle(GetShopperAssistantByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ShopperAssistantResponse> Handle(GetShopperAssistantByIdQuery request, CancellationToken cancellationToken)
     {
         var shopperAssistant =
             await _dbContext.ShopperAssistants.FirstOrDefaultAsync(e => e.Id == request.ShopperAssistantId,
@@ -31,7 +31,7 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
             throw new ShopperAssistantNotFoundException(request.ShopperAssistantId);
         }
 
-        return new UserResponse()
+        return new ShopperAssistantResponse()
         {
             Id = shopperAssistant.Id,
             Name = shopperAssistant.Name,

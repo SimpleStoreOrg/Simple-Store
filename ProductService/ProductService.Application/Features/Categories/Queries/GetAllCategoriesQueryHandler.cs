@@ -42,7 +42,10 @@ public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuer
             {
                 Id = c.Id,
                 Name = c.Name,
-                ParentCategoryId = c.ParentCategoryId
+                ParentCategoryId = c.ParentCategoryId,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt,
+                DeletedAt = c.DeletedAt
             }).ToListAsync(cancellationToken);
 
         _logger.LogInformation("Returned {Count} categories out of {Total}", categories.Count, totalCount);

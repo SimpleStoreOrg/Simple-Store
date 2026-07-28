@@ -34,7 +34,10 @@ public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery,
         {
             Id = category.Id,
             Name = category.Name,
-            ParentCategoryId = category.ParentCategoryId
+            ParentCategoryId = category.ParentCategoryId,
+            CreatedAt = category.CreatedAt,
+            UpdatedAt = category.UpdatedAt,
+            DeletedAt = category.DeletedAt //Chek them
         };
     }
 }
