@@ -48,20 +48,23 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         product.Price = request.Request.Price;
         product.Stock = request.Request.Stock;
         product.CategoryId = request.Request.CategoryId;
+        product.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         
         _logger.LogInformation("Product {ProductId} updated successfully. Name: {Name}, Price: {Price}",
             product.Id, product.Name, product.Price);
         
-        return new ProductResponse()
+        return new ProductResponse
         {
             Id = product.Id,
             Name = product.Name,
             Price = product.Price,
             Stock = product.Stock,
             CategoryId = product.CategoryId,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            DeletedAt = product.DeletedAt
         };
     }
 }

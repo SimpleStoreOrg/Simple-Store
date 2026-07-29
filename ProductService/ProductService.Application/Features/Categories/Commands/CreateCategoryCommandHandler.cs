@@ -25,7 +25,8 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
     {
         var name = request.Request.Name.Trim().ToLower();
 
-        var exists = await _dbContext.Categories.AnyAsync(c => c.Name.Trim().ToLower() == name);
+        var exists = await _dbContext.Categories.AnyAsync(c => c.Name.Trim().ToLower() == name,
+            cancellationToken: cancellationToken);
 
         if (exists)
         {
@@ -34,7 +35,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         }
 
         _logger.LogInformation("New category creation");
-        var category = new CategoryEntity()
+        var category = new CategoryEntity
         {
             Name = request.Request.Name,
             ParentCategoryId = request.Request.ParentCategoryId,
@@ -43,15 +44,18 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         
         await _dbContext.Categories.AddAsync(category, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        _logger.LogInformation("Category {CategoryId}: {CategoryName} created successfully", category.Id, category.Name);
 
-        return new CategoryResponse()
+        _logger.LogInformation("Category {CategoryId}: {CategoryName} created successfully", category.Id,
+            category.Name);
+
+        return new CategoryResponse
         {
             Id = category.Id,
             Name = category.Name,
             ParentCategoryId = category.ParentCategoryId,
-            CreatedAt = category.CreatedAt
+            CreatedAt = category.CreatedAt,
+            UpdatedAt = category.UpdatedAt,
+            DeletedAt = category.DeletedAt
         };
     }
 }
