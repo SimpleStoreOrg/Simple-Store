@@ -9,9 +9,9 @@ namespace UserService.Application.Services;
 
 public class JwtService
 {
-    private readonly string _key;
-    private readonly string _issuer;
-    private readonly string _audience;
+    private readonly string? _key;
+    private readonly string? _issuer;
+    private readonly string? _audience;
 
     public JwtService(IConfiguration configuration)
     {
@@ -22,11 +22,10 @@ public class JwtService
 
     public string GenerateToken(UserEntity user)
     {
-        var claims = new List<Claim>()
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, $"{user.Name} {user.Surname}"),
-            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.UserName!),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 

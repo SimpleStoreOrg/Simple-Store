@@ -22,4 +22,11 @@ public class AuthenticationController : ControllerBase
         var result = await _mediator.Send(new LoginCommand(request));
         return Ok(result);
     }
+    
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterRequest request)
+    {
+        await _mediator.Send(new RegisterCommand(request));
+        return Ok("User created");
+    }
 }
