@@ -20,5 +20,5 @@ public class UserServiceDbContext : DbContext, IUserServiceDbContext
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<ShopperAssistantEntity> ShopperAssistants { get; set; }
-    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 }

@@ -36,14 +36,14 @@ public class CustomerController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateCustomer(CreateUserRequest request)
+    public async Task<IActionResult> CreateCustomer(CreateCustomerRequest request)
     {
         var result = await _mediator.Send(new CreateCustomerCommand(request));
         return Ok(result);
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(long id, UpdateUserRequest request)
+    public async Task<IActionResult> UpdateUser(long id, UpdateCustomerRequest request)
     {
         var result = await _mediator.Send(new UpdateCustomerCommand(id, request));
         return Ok(result);

@@ -7,9 +7,9 @@ using UserService.Application.Interfaces.Data;
 
 namespace UserService.Application.Features.Customers.Queries;
 
-public record GetAllCustomersQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<UserResponse>>;
+public record GetAllCustomersQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<CustomerResponse>>;
 
-public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery, PagedResponse<UserResponse>>
+public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery, PagedResponse<CustomerResponse>>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetAllCustomersQueryHandler> _logger;
@@ -20,14 +20,14 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
         _logger = logger;
     }
     
-    public async Task<PagedResponse<UserResponse>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<CustomerResponse>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching Customers. Page: {PageNumber}, Size: {PageSize}", request.PageNumber, request.PageSize);
         if (request.PageNumber <= 0 || request.PageSize <= 0)
         {
             _logger.LogWarning("Invalid pagination parameters. Page: {PageNumber}, Size: {PageSize}",
                 request.PageNumber, request.PageSize);
-            return new PagedResponse<UserResponse>();
+            return new PagedResponse<CustomerResponse>();
         }
         
         var query = _dbContext.Customers.AsQueryable();
@@ -38,12 +38,13 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
             .OrderBy(c => c.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(c => new UserResponse()
+            .Select(c => new CustomerResponse
             {
                 Id = c.Id,
                 Name = c.Name,
                 Surname = c.Surname,
                 Role = c.Role,
+                Username = c.UserName,
                 Email = c.Email,
                 PhoneNumber = c.PhoneNumber,
                 CreatedAt = c.CreatedAt,
@@ -52,7 +53,7 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
         
         _logger.LogInformation("Returned {Count} customers out of {Total}", customers.Count, totalCount);
         
-        return new PagedResponse<UserResponse>()
+        return new PagedResponse<CustomerResponse>
         {
             Items = customers,
             PageNumber = request.PageNumber,

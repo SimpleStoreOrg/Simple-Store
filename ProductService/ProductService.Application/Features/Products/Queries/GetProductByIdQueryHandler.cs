@@ -29,13 +29,16 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
             throw new ProductNotFoundException(request.ProductId);
         }
         
-        return new ProductResponse()
+        return new ProductResponse
         {
             Id = product.Id,
             Name = product.Name,
             Price = product.Price,
             Stock = product.Stock,
-            CategoryId = product.CategoryId
+            CategoryId = product.CategoryId,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            DeletedAt = product.DeletedAt
         };
     }
 }

@@ -22,32 +22,39 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
         _dbContext = dbContext;
         _logger = logger;
     }
-    
-    public async Task<ShopperAssistantResponse> Handle(CreateShopperAssistantCommand request, CancellationToken cancellationToken)
+
+    public async Task<ShopperAssistantResponse> Handle(CreateShopperAssistantCommand request,
+        CancellationToken cancellationToken)
+
     {
         _logger.LogInformation("Creating Shopper Assistant. Name: {Name}, Surname: {Surname}", request.Request.Name,
             request.Request.Surname);
 
-        var email = request.Request.Email.Trim().ToLower();
-        var phoneNumber = request.Request.PhoneNumber.Trim().ToLower();
+        var username = request.Request.Username!.Trim().ToLower();
+        var email = request.Request.Email!.Trim().ToLower();
+        var phoneNumber = request.Request.PhoneNumber!.Trim().ToLower();
 
         var exists =
             await _dbContext.ShopperAssistants.AnyAsync(
-                e => e.Email == email || e.PhoneNumber == phoneNumber, cancellationToken);
-        
+                e => e.UserName!.Trim().ToLower() == username || e.Email == email ||
+                     e.PhoneNumber == phoneNumber,
+                cancellationToken);
+
         if (exists)
         {
-            _logger.LogWarning("Shopper Assistant already exists with email or phone number: {Email}, {PhoneNumber}", email, phoneNumber);
+            _logger.LogWarning("Shopper Assistant already exists with email or phone number: {Email}, {PhoneNumber}",
+                email, phoneNumber);
             throw new ShopperAssistantAlreadyExistsException();
         }
-        
-        var shopperAssistant = new ShopperAssistantEntity()
+
+        var shopperAssistant = new ShopperAssistantEntity
         {
             Name = request.Request.Name,
             Surname = request.Request.Surname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Role = RoleStatus.ShopperAssistant,
             Position = request.Request.Position,
+            UserName = request.Request.Username,
             Email = email,
             PhoneNumber = phoneNumber,
             CreatedAt = DateTime.UtcNow.AddHours(5)
@@ -55,16 +62,17 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
 
         await _dbContext.ShopperAssistants.AddAsync(shopperAssistant, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        
+
         _logger.LogInformation("Shopper Assistant created successfully with ID: {Id}", shopperAssistant.Id);
 
-        return new ShopperAssistantResponse()
+        return new ShopperAssistantResponse
         {
             Id = shopperAssistant.Id,
             Name = shopperAssistant.Name,
             Surname = shopperAssistant.Surname,
             Role = shopperAssistant.Role,
             Position = shopperAssistant.Position,
+            Username = shopperAssistant.UserName,
             Email = shopperAssistant.Email,
             PhoneNumber = shopperAssistant.PhoneNumber,
             CreatedAt = shopperAssistant.CreatedAt

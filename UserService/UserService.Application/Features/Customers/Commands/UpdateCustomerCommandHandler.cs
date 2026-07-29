@@ -8,9 +8,9 @@ using UserService.Application.Interfaces.Data;
 
 namespace UserService.Application.Features.Customers.Commands;
 
-public record UpdateCustomerCommand(long CustomerId ,UpdateUserRequest Request) : IRequest<UserResponse>;
+public record UpdateCustomerCommand(long CustomerId ,UpdateCustomerRequest Request) : IRequest<CustomerResponse>;
 
-public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerCommand, UserResponse>
+public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerCommand, CustomerResponse>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<UpdateCustomerCommandHandler> _logger;
@@ -21,17 +21,19 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
         _logger = logger;
     }
     
-    public async Task<UserResponse> Handle(UpdateCustomerCommand request, CancellationToken cancellationToken)
+    public async Task<CustomerResponse> Handle(UpdateCustomerCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Updating customer with ID: {CustomerId}", request.CustomerId);
 
-        var email = request.Request.Email.Trim().ToLower();
-        var phoneNumber = request.Request.PhoneNumber.Trim().ToLower();
+        var username = request.Request.Username!.Trim().ToLower();
+        var email = request.Request.Email!.Trim().ToLower();
+        var phoneNumber = request.Request.PhoneNumber!.Trim().ToLower();
 
         var exists = await _dbContext.Customers
             .AnyAsync(c =>
                     (c.Id != request.CustomerId) &&
-                    (c.Email.Trim().ToLower() == email || c.PhoneNumber.Trim().ToLower() == phoneNumber),
+                    (c.UserName!.Trim().ToLower() == username || c.Email!.Trim().ToLower() == email ||
+                     c.PhoneNumber!.Trim().ToLower() == phoneNumber),
                 cancellationToken);
 
         if (exists)
@@ -53,6 +55,7 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
         customer.Name = request.Request.Name;
         customer.Surname = request.Request.Surname;
         customer.Email = email;
+        customer.UserName = request.Request.Username;
         customer.PhoneNumber = phoneNumber;
         customer.UpdatedAt = DateTime.UtcNow;
 
@@ -62,12 +65,13 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
             "Customer {CustomerId} updated successfully. Name: {CustomerName}, Surname: {CustomerSurname}", request.CustomerId,
             customer.Name, customer.Surname);
 
-        return new UserResponse()
+        return new CustomerResponse
         {
             Id = request.CustomerId,
             Name = customer.Name,
             Surname = customer.Surname,
             Role = customer.Role,
+            Username = customer.UserName,
             Email = customer.Email,
             PhoneNumber = customer.PhoneNumber,
             CreatedAt = customer.CreatedAt,

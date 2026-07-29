@@ -2,7 +2,7 @@ using UserService.Domain.Enums;
 
 namespace UserService.Application.DTOs.Response;
 
-public class UserResponse
+public class CustomerResponse
 {
     public long Id { get; set; }
     public string? Name { get; set; }

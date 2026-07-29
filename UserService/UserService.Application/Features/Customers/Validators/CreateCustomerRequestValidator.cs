@@ -3,7 +3,7 @@ using UserService.Application.DTOs.Request;
 
 namespace UserService.Application.Features.Customers.Validators;
 
-public class CreateCustomerRequestValidator : AbstractValidator<CreateUserRequest>
+public class CreateCustomerRequestValidator : AbstractValidator<CreateCustomerRequest>
 {
     public CreateCustomerRequestValidator()
     {

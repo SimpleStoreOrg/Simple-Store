@@ -9,9 +9,9 @@ using UserService.Domain.Entities;
 
 namespace UserService.Application.Features.Customers.Commands;
 
-public record CreateCustomerCommand(CreateUserRequest Request) : IRequest<UserResponse>;
+public record CreateCustomerCommand(CreateCustomerRequest Request) : IRequest<CustomerResponse>;
 
-public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, UserResponse>
+public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, CustomerResponse>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<CreateCustomerCommandHandler> _logger;
@@ -22,17 +22,19 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
         _logger = logger;
     }
     
-    public async Task<UserResponse> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
+    public async Task<CustomerResponse> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Creating customer. Name: {CustomerName}, Surname: {CustomerSurname}", request.Request.Name,
             request.Request.Surname);
-        
-        var email = request.Request.Email.Trim().ToLower();
-        var phoneNumber = request.Request.PhoneNumber.Trim().ToLower();
+
+        var username = request.Request.Username!.Trim().ToLower();
+        var email = request.Request.Email!.Trim().ToLower();
+        var phoneNumber = request.Request.PhoneNumber!.Trim().ToLower();
 
         var exists =
             await _dbContext.Customers.AnyAsync(
-                e => e.Email.Trim().ToLower() == email || e.PhoneNumber.Trim().ToLower() == phoneNumber,
+                e => e.UserName!.Trim().ToLower() == username || e.Email!.Trim().ToLower() == email ||
+                     e.PhoneNumber!.Trim().ToLower() == phoneNumber,
                 cancellationToken);
         
         if (exists)
@@ -42,12 +44,13 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
             throw new CustomerAlreadyExistsException();
         }
         
-        var customer = new CustomerEntity()
+        var customer = new CustomerEntity
         {
             Name = request.Request.Name,
             Surname = request.Request.Surname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Email = email,
+            UserName = request.Request.Username,
             PhoneNumber = phoneNumber,
             CreatedAt = DateTime.UtcNow
         };
@@ -57,12 +60,13 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
         
         _logger.LogInformation("Customer created successfully with ID: {CustomerId}", customer.Id);
 
-        return new UserResponse()
+        return new CustomerResponse
         {
             Id = customer.Id,
             Name = customer.Name,
             Surname = customer.Surname,
             Role = customer.Role,
+            Username = customer.UserName,
             Email = customer.Email,
             PhoneNumber = customer.PhoneNumber,
             CreatedAt = customer.CreatedAt

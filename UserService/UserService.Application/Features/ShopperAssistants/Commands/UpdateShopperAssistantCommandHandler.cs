@@ -21,39 +21,49 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         _dbContext = dbContext;
         _logger = logger;
     }
-    public async Task<ShopperAssistantResponse> Handle(UpdateShopperAssistantCommand request, CancellationToken cancellationToken)
+
+    public async Task<ShopperAssistantResponse> Handle(UpdateShopperAssistantCommand request,
+        CancellationToken cancellationToken)
+
     {
         _logger.LogInformation("Updating Shopper Assistant with ID: {Id}", request.ShopperAssistantId);
 
-        var email = request.Request.Email.Trim().ToLower();
-        var phoneNumber = request.Request.PhoneNumber.Trim().ToLower();
+        var username = request.Request.Username!.Trim().ToLower();
+        var email = request.Request.Email!.Trim().ToLower();
+        var phoneNumber = request.Request.PhoneNumber!.Trim().ToLower();
 
         var exists = await _dbContext.ShopperAssistants
             .AnyAsync(e =>
                     e.Id != request.ShopperAssistantId &&
-                    (e.Email == email || e.PhoneNumber == phoneNumber), cancellationToken);
+                    (e.UserName!.Trim().ToLower() == username || e.Email == email || e.PhoneNumber == phoneNumber),
+                cancellationToken);
 
         if (exists)
         {
             _logger.LogWarning(
-                "Shopper Assistant already exists with email or phone number: {Email}, {PhoneNumber}", email, phoneNumber);
+                "Shopper Assistant already exists with email or phone number: {Email}, {PhoneNumber}", email,
+                phoneNumber);
             throw new ShopperAssistantAlreadyExistsException();
         }
-        
+
         var shopperAssistant =
-            await _dbContext.ShopperAssistants.FirstOrDefaultAsync(e => e.Id == request.ShopperAssistantId, cancellationToken);
+            await _dbContext.ShopperAssistants.FirstOrDefaultAsync(e => e.Id == request.ShopperAssistantId,
+                cancellationToken);
 
         if (shopperAssistant == null)
         {
             _logger.LogWarning("Shopper Assistant with ID {Id} not found", request.ShopperAssistantId);
             throw new ShopperAssistantNotFoundException(request.ShopperAssistantId);
         }
-
+        
+        var shAssistant = await _dbContext.Users.FirstOrDefaultAsync(u => u.Role == RoleStatus.ShopperAssistant);
+        
         shopperAssistant.Name = request.Request.Name;
         shopperAssistant.Surname = request.Request.Surname;
         shopperAssistant.Email = email;
         shopperAssistant.Role = RoleStatus.ShopperAssistant;
         shopperAssistant.Position = request.Request.Position;
+        shopperAssistant.UserName = request.Request.Username;
         shopperAssistant.PhoneNumber = phoneNumber;
         shopperAssistant.UpdatedAt = DateTime.UtcNow.AddHours(5);
 
@@ -63,7 +73,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
             "Shopper Assistant {Id} updated successfully. Name: {Name}, Surname: {Surname}", request.ShopperAssistantId,
             shopperAssistant.Name, shopperAssistant.Surname);
 
-        return new ShopperAssistantResponse()
+        return new ShopperAssistantResponse
         {
             Id = request.ShopperAssistantId,
             Name = shopperAssistant.Name,
@@ -71,6 +81,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
             Email = shopperAssistant.Email,
             Role = shopperAssistant.Role,
             Position = shopperAssistant.Position,
+            Username = shopperAssistant.UserName,
             PhoneNumber = shopperAssistant.PhoneNumber,
             CreatedAt = shopperAssistant.CreatedAt,
             UpdatedAt = shopperAssistant.UpdatedAt

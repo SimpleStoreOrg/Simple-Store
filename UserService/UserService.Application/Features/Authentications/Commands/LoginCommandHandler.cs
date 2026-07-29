@@ -28,13 +28,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
     public async Task<TokenResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Logging to the system");
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Request.Email,
+        var user = await _context.Users.FirstOrDefaultAsync(
+            u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower() &&
+                 u.Email!.Trim() == request.Request.Email!.Trim(),
             cancellationToken: cancellationToken);
 
         if (user == null)
         {
-            _logger.LogInformation("Email not found");
-            throw new EmailNotFoundException();
+            _logger.LogInformation("User not found. Username: {Username}, Email: {Email}", request.Request.Username,
+                request.Request.Email);
+            throw new EmailAndUsernameNotFoundException();
         }
 
         var isValid = BCrypt.Net.BCrypt.Verify(request.Request.Password, user.PasswordHash);
@@ -46,7 +49,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
 
         var accessToken = _jwtService.GenerateToken(user);
 
-        var refreshToken = new RefreshToken()
+        var refreshToken = new RefreshTokenEntity
         {
             Token = Guid.NewGuid().ToString(),
             UserId = user.Id,
@@ -57,7 +60,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
 
         await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
 
-        return new TokenResponse()
+        return new TokenResponse
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken.Token,
