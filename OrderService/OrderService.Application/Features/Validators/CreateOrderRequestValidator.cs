@@ -9,9 +9,6 @@ public class CreateOrderRequestValidator : AbstractValidator<CreateOrderRequest>
     {
         RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage("Customer Id must be greater than 0");
 
-        RuleFor(x => x.ShopperAssistantId).GreaterThan(0)
-            .WithMessage("Shopper Assistant Id must be greater than 0");
-
         RuleForEach(x => x.Items).ChildRules(item =>
         {
             item.RuleFor(i => i.ProductId).GreaterThan(0).WithMessage("Product Id must be greater than 0");

@@ -53,12 +53,14 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
         _logger.LogInformation("Category {CategoryId} updated successfully. Name: {CategoryName}", request.CategoryId,
             category.Name);
         
-        return new CategoryResponse()
+        return new CategoryResponse
         {
             Id = category.Id,
             Name = category.Name,
             ParentCategoryId = category.ParentCategoryId,
-            UpdatedAt = category.UpdatedAt
+            CreatedAt = category.CreatedAt,
+            UpdatedAt = category.UpdatedAt,
+            DeletedAt = category.DeletedAt
         };
     }
 }

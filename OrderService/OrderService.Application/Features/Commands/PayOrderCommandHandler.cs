@@ -76,7 +76,7 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
 
             foreach (var item in order.OrderItems)
             {
-                await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest()
+                await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest
                 {
                     Quantity = item.Quantity
                 });
@@ -87,7 +87,7 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
             
             _logger.LogInformation("Successful payment");
 
-            return new PaymentResponse()
+            return new PaymentResponse
             {
                 Total = total,
                 Paid = request.AmountPaid,

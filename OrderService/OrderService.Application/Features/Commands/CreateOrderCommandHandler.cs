@@ -20,8 +20,11 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IProductApi _productApi;
     private readonly IUserApi _userApi;
 
-    public CreateOrderCommandHandler(IOrderServiceDbContext dbContext, ILogger<CreateOrderCommandHandler> logger,
-        IProductApi productApi, IUserApi userApi)
+    public CreateOrderCommandHandler(
+        IOrderServiceDbContext dbContext,
+        ILogger<CreateOrderCommandHandler> logger,
+        IProductApi productApi,
+        IUserApi userApi)
     {
         _dbContext = dbContext;
         _logger = logger;
@@ -36,14 +39,9 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             throw new InvalidOrderException("Order must contain at least one item");
         }
 
-        var hasDuplicates = request.Request.Items
-            .GroupBy(oi => oi.ProductId)
-            .Any(g => g.Count() > 1);
-
-        if (hasDuplicates)
-        {
-            throw new DuplicateProductException();
-        }
+        request.Request.Items = request.Request.Items
+            .DistinctBy(e => e.ProductId)
+            .ToList();
         
         var customer = await _userApi.GetUserById(request.Request.CustomerId);
         
@@ -53,21 +51,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             throw new CustomerNotFoundException(request.Request.CustomerId);
         }
 
-        var shopperAssistant = await _userApi.GetUserById(request.Request.ShopperAssistantId);
-
-        if (shopperAssistant == null)
-        {
-            _logger.LogWarning("Shopper Assistant with ID {EmployeeId} not found", request.Request.ShopperAssistantId);
-            throw new ShopperAssistantNotFoundException(request.Request.ShopperAssistantId);
-        }
-
         try
         {
             _logger.LogInformation("Creating order using Customer ID: {CustomerId}", request.Request.CustomerId);
-            var order = new OrderEntity()
+            var order = new OrderEntity
             {
                 CustomerId = customer.Id,
-                ShopperAssistantId = shopperAssistant.Id,
                 CreatedAt = DateTime.UtcNow,
                 Status = OrderStatus.New,
                 PickUpDeadline = DateTime.UtcNow.AddMinutes(30),
@@ -77,13 +66,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             foreach (var item in request.Request.Items)
             {
                 var product = await _productApi.GetProductById(item.ProductId);
-                
-                if (product == null)
-                {
-                    _logger.LogWarning("Product with ID {ProductId} not found while creating order", item.ProductId);
-                    throw new Exceptions.ProductNotFoundException(item.ProductId);
-                }
-                
+
                 if (item.Quantity <= 0)
                 {
                     _logger.LogWarning("Invalid quantity for product {ProductId}", item.ProductId);
@@ -97,7 +80,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                     throw new InsufficientStockException(item.ProductId, product.Stock, item.Quantity);
                 }
 
-                var orderItems = new OrderItemsEntity()
+                var orderItems = new OrderItemsEntity
                 {
                     OrderId = order.Id,
                     ProductId = item.ProductId,
@@ -119,7 +102,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             {
                 Id = order.Id,
                 CustomerId = order.CustomerId,
-                ShopperAssistantId = order.ShopperAssistantId,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt = order.UpdatedAt,
