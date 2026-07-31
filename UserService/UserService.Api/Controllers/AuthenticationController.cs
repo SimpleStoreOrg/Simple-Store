@@ -17,14 +17,14 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequest request)
+    public async Task<IActionResult> LoginAsync(LoginRequest request)
     {
         var result = await _mediator.Send(new LoginCommand(request));
         return Ok(result);
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest request)
+    public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
         await _mediator.Send(new RegisterCommand(request));
         return Ok("User created");

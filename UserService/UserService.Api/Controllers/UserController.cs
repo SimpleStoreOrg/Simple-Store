@@ -7,7 +7,7 @@ using UserService.Application.Features.Users.Queries;
 namespace UserService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant")]
+[Authorize(Roles = "ShopperAssistant,Customer")]
 public class UserController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -17,7 +17,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<UserResponse>> GetAllUSers([FromQuery] int pageNumber = 1,
+    public async Task<ActionResult<UserResponse>> GetAllUSersAsync([FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllUsersQuery(pageNumber, pageSize));
@@ -25,7 +25,7 @@ public class UserController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUserById(long id)
+    public async Task<IActionResult> GetUserByIdAsync(long id)
     {
         var result = await _mediator.Send(new GetUserByIdQuery(id));
         return Ok(result);

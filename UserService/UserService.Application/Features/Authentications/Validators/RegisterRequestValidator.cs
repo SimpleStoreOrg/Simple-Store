@@ -24,6 +24,6 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
             .Matches("[0-9]").WithMessage("Password must contain at least 1 number");
 
         RuleFor(x => x.Role)
-            .IsInEnum().WithMessage("Invalid position");
+            .IsInEnum().WithMessage("Invalid role");
     }
 }

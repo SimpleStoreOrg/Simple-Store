@@ -22,5 +22,8 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
             .Matches("[A-Z]").WithMessage("Password must contain at least 1 uppercase")
             .Matches("[a-z]").WithMessage("Password must contain at least 1 lowercase")
             .Matches("[0-9]").WithMessage("Password must contain at least 1 number");
+        
+        RuleFor(x => x.Role)
+            .IsInEnum().WithMessage("Invalid role");
     }
 }

@@ -5,6 +5,8 @@ using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
+using UserService.Domain.Entities;
+using UserService.Domain.Enums;
 
 namespace UserService.Application.Features.Customers.Commands;
 
@@ -25,15 +27,23 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
     {
         _logger.LogInformation("Updating customer with ID: {CustomerId}", request.CustomerId);
 
-        var username = request.Request.Username!.Trim().ToLower();
-        var email = request.Request.Email!.Trim().ToLower();
-        var phoneNumber = request.Request.PhoneNumber!.Trim().ToLower();
+        var customer = await _dbContext.Users.OfType<CustomerEntity>()
+            .FirstOrDefaultAsync(x => x.Id == request.CustomerId, cancellationToken: cancellationToken);
+        
+        if (customer == null)
+        {
+            _logger.LogWarning("Shopper Assistant with ID {Id} not found", request.CustomerId);
+            throw new CustomerNotFoundException(request.CustomerId);
+        }
+        
+        var username = request.Request.Username?.Trim().ToLower();
+        var email = request.Request.Email?.Trim().ToLower();
+        var phoneNumber = request.Request.PhoneNumber?.Trim().ToLower();
 
-        var exists = await _dbContext.Customers
-            .AnyAsync(c =>
-                    (c.Id != request.CustomerId) &&
-                    (c.UserName!.Trim().ToLower() == username || c.Email!.Trim().ToLower() == email ||
-                     c.PhoneNumber!.Trim().ToLower() == phoneNumber),
+        var exists = await _dbContext.Users
+            .AnyAsync(c => c.Id != request.CustomerId && c.Role == RoleStatus.Customer &&
+                           (c.UserName!.Trim().ToLower() == username || c.Email!.Trim().ToLower() == email ||
+                            c.PhoneNumber!.Trim().ToLower() == phoneNumber),
                 cancellationToken);
 
         if (exists)
@@ -42,22 +52,13 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
                 "Customer already exists with email or phone number: {Email},  {PhoneNumber}", email, phoneNumber);
             throw new CustomerAlreadyExistsException();
         }
-        
-        var customer =
-            await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == request.CustomerId, cancellationToken);
-
-        if (customer == null)
-        {
-            _logger.LogWarning("Customer with ID {CustomerId} not found", request.CustomerId);
-            throw new CustomerNotFoundException(request.CustomerId);
-        }
 
         customer.Name = request.Request.Name;
         customer.Surname = request.Request.Surname;
         customer.Email = email;
         customer.UserName = request.Request.Username;
         customer.PhoneNumber = phoneNumber;
-        customer.UpdatedAt = DateTime.UtcNow;
+        customer.UpdatedAt = DateTime.UtcNow.AddHours(5);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

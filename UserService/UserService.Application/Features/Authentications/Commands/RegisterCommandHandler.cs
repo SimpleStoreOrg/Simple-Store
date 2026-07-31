@@ -6,6 +6,7 @@ using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 using UserService.Application.Services;
 using UserService.Domain.Entities;
+using UserService.Domain.Enums;
 
 namespace UserService.Application.Features.Authentications.Commands;
 
@@ -26,23 +27,47 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, bool>
     {
         _logger.LogInformation("Registering user: {Username}", request.Request.Username);
 
-        var exists = await _context.Users.FirstOrDefaultAsync(
-            u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower(),
+        var exists = await _context.Users.AnyAsync(
+            u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower()
+            && u.Role == request.Request.Role,
             cancellationToken: cancellationToken);
 
-        if (exists != null)
+        if (exists)
         {
             _logger.LogInformation("User already exists with this UserName: {Username}", request.Request.Username);
             throw new UserAlreadyExistsException();
         }
 
-        var user = new UserEntity
+        UserEntity user;
+        switch (request.Request.Role)
         {
-            UserName = request.Request.Username,
-            Email = request.Request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
-            Role = request.Request.Role
-        };
+            case RoleStatus.ShopperAssistant:
+
+                user = new ShopperAssistantEntity
+                {
+                    UserName = request.Request.Username,
+                    Email = request.Request.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
+                    Role = request.Request.Role,
+                    CreatedAt = DateTime.UtcNow.AddHours(5)
+                };
+                break;
+            
+            case RoleStatus.Customer:
+                
+                user = new CustomerEntity
+                {
+                    UserName = request.Request.Username,
+                    Email = request.Request.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
+                    Role = RoleStatus.Customer,
+                    CreatedAt = DateTime.UtcNow.AddHours(5)
+                };
+                break;
+            
+            default:
+                throw new InvalidOperationException("Invalid role");
+        }
 
         await _context.Users.AddAsync(user, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);

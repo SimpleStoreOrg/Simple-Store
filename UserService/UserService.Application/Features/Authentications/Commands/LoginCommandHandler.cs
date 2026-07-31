@@ -30,7 +30,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
         _logger.LogInformation("Logging to the system");
         var user = await _context.Users.FirstOrDefaultAsync(
             u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower() &&
-                 u.Email!.Trim() == request.Request.Email!.Trim(),
+                 u.Email!.Trim() == request.Request.Email!.Trim() && u.Role == request.Request.Role,
             cancellationToken: cancellationToken);
 
         if (user == null)

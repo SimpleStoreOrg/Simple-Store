@@ -52,7 +52,7 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
             Email = email,
             UserName = request.Request.Username,
             PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(5)
         };
 
         await _dbContext.Customers.AddAsync(customer, cancellationToken);
