@@ -29,12 +29,13 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserRes
             throw new UserNotFoundException(request.UserId);
         }
 
-        return new UserResponse()
+        return new UserResponse
         {
             Id = user.Id,
             Name = user.Name,
             Surname = user.Surname,
             Role = user.Role,
+            Username = user.UserName,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
             CreatedAt = user.CreatedAt,

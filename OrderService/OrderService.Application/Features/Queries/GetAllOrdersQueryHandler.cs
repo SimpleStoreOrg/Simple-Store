@@ -46,7 +46,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
                 CreatedAt = o.CreatedAt,
                 UpdatedAt = o.UpdatedAt,
                 DeletedAt = o.DeletedAt,
-                Items = o.OrderItems.Select(oi => new OrderItemResponse()
+                Items = o.OrderItems.Select(oi => new OrderItemResponse
                 {
                     ProductId = oi.ProductId,
                     Price = oi.Price,
@@ -59,7 +59,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
         _logger.LogInformation("Returned {Count} order out of {Total}", orders.Count, totalCount);
 
         
-        return new PagedResponse<OrderResponse>()
+        return new PagedResponse<OrderResponse>
         {
             Items = orders,
             PageNumber = request.PageNumber,

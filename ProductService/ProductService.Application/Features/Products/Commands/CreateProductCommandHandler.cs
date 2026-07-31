@@ -34,26 +34,29 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
         }
         
         _logger.LogInformation("New Product creation");
-        var product = new ProductEntity()
+        var product = new ProductEntity
         {
             Name = request.Request.Name,
             Price = request.Request.Price,
             Stock = request.Request.Stock,
-            CategoryId = request.Request.CategoryId
+            CategoryId = request.Request.CategoryId,
+            CreatedAt = DateTime.UtcNow
         };
         await _dbContext.Products.AddAsync(product, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Product {ProductId}: {ProductName} created successfully", product.Id, product.Name);
         
-        return new ProductResponse()
+        return new ProductResponse
         {
             Id = product.Id,
             Name = product.Name,
             Price = product.Price,
             Stock = product.Stock,
             CategoryId = product.CategoryId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            DeletedAt = product.DeletedAt
         };
     }
 }

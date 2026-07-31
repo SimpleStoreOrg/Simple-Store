@@ -1,19 +1,15 @@
 using FluentValidation;
 using UserService.Application.DTOs.Request;
 
-namespace UserService.Application.Features.Customers.Validators;
+namespace UserService.Application.Features.Authentications.Validators;
 
-public class CreateCustomerRequestValidator : AbstractValidator<CreateCustomerRequest>
+public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
-    public CreateCustomerRequestValidator()
+    public LoginRequestValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Name is required")
-            .MaximumLength(20).WithMessage("Name cannot exceed 20");
-        
-        RuleFor(x=>x.Surname)
-            .NotEmpty().WithMessage("Surname is required")
-            .MaximumLength(20).WithMessage("Surname cannot exceed 20");
+        RuleFor(x=>x.Username)
+            .NotEmpty().WithMessage("Username is required")
+            .MaximumLength(20).WithMessage("Username cannot exceed 20");
 
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required")
@@ -26,8 +22,5 @@ public class CreateCustomerRequestValidator : AbstractValidator<CreateCustomerRe
             .Matches("[A-Z]").WithMessage("Password must contain at least 1 uppercase")
             .Matches("[a-z]").WithMessage("Password must contain at least 1 lowercase")
             .Matches("[0-9]").WithMessage("Password must contain at least 1 number");
-
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Number is required");
     }
 }

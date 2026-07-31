@@ -31,12 +31,13 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
             throw new ShopperAssistantNotFoundException(request.ShopperAssistantId);
         }
 
-        return new ShopperAssistantResponse()
+        return new ShopperAssistantResponse
         {
             Id = shopperAssistant.Id,
             Name = shopperAssistant.Name,
             Surname = shopperAssistant.Surname,
             Role = shopperAssistant.Role,
+            Username = shopperAssistant.UserName,
             Email = shopperAssistant.Email,
             PhoneNumber = shopperAssistant.PhoneNumber,
             CreatedAt = shopperAssistant.CreatedAt,

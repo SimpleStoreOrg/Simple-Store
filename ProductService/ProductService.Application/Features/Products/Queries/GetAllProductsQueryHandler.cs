@@ -37,18 +37,21 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
             .OrderBy(p => p.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(p => new ProductResponse()
+            .Select(p => new ProductResponse
             {
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 Stock = p.Stock,
-                CategoryId = p.CategoryId
+                CategoryId = p.CategoryId,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                DeletedAt = p.DeletedAt
             }).ToListAsync(cancellationToken);
 
         _logger.LogInformation("Returned {Count} products out of {Total}", products.Count, totalCount);
         
-        return new PagedResponse<ProductResponse>()
+        return new PagedResponse<ProductResponse>
         {
             Items = products,
             PageNumber = request.PageNumber,

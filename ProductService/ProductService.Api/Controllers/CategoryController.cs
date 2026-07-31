@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Request;
@@ -9,6 +10,7 @@ using ProductService.Application.Features.Categories.Queries;
 namespace ProductService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "ShopperAssistant")]
 public class CategoryController : ControllerBase
 {
     private readonly IMediator _mediator;

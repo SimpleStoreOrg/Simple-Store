@@ -31,7 +31,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             throw new Exception("Order not found");
         }
         
-        return new OrderResponse()
+        return new OrderResponse
         {
             Id = order.Id,
             CustomerId = order.CustomerId,
@@ -40,7 +40,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             CreatedAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
             DeletedAt = order.DeletedAt,
-            Items = order.OrderItems.Select(oi => new OrderItemResponse()
+            Items = order.OrderItems.Select(oi => new OrderItemResponse
             {
                 ProductId = oi.ProductId,
                 Price = oi.Price,

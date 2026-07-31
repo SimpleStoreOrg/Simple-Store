@@ -7,9 +7,9 @@ using UserService.Application.Interfaces.Data;
 
 namespace UserService.Application.Features.Customers.Queries;
 
-public record GetCustomerByIdQuery(long CustomerId) : IRequest<UserResponse>;
+public record GetCustomerByIdQuery(long CustomerId) : IRequest<CustomerResponse>;
 
-public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery, UserResponse>
+public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery, CustomerResponse>
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetCustomerByIdQueryHandler> _logger;
@@ -20,7 +20,7 @@ public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery,
         _logger = logger;
     }
     
-    public async Task<UserResponse> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
+    public async Task<CustomerResponse> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
     {
         var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == request.CustomerId, cancellationToken);
 
@@ -30,12 +30,13 @@ public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery,
             throw new CustomerNotFoundException(request.CustomerId);
         }
 
-        return new UserResponse()
+        return new CustomerResponse
         {
             Id = customer.Id,
             Name = customer.Name,
             Surname = customer.Surname,
             Role = customer.Role,
+            Username = customer.UserName,
             Email = customer.Email,
             PhoneNumber = customer.PhoneNumber,
             CreatedAt = customer.CreatedAt,

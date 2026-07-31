@@ -19,10 +19,11 @@ public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery,
         _dbContext = dbContext;
         _logger = logger;
     }
-    
+
     public async Task<CategoryResponse> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == request.CategoryId, cancellationToken);
+        var category =
+            await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == request.CategoryId, cancellationToken);
 
         if (category == null)
         {
@@ -30,14 +31,14 @@ public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery,
             throw new CategoryNotFoundException(request.CategoryId);
         }
 
-        return new CategoryResponse()
+        return new CategoryResponse
         {
             Id = category.Id,
             Name = category.Name,
             ParentCategoryId = category.ParentCategoryId,
             CreatedAt = category.CreatedAt,
             UpdatedAt = category.UpdatedAt,
-            DeletedAt = category.DeletedAt //Chek them
+            DeletedAt = category.DeletedAt
         };
     }
 }

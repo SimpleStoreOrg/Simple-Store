@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.DTOs.Request;
 using OrderService.Application.DTOs.Response;
@@ -8,6 +9,7 @@ using OrderService.Application.Features.Queries;
 namespace OrderService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "ShopperAssistant,Customer")]
 public class OrderController : ControllerBase
 {
     private readonly IMediator _mediator;

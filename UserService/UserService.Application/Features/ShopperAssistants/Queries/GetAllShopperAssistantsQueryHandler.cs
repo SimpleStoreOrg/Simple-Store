@@ -39,13 +39,14 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
             .OrderBy(e => e.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(e => new ShopperAssistantResponse()
+            .Select(e => new ShopperAssistantResponse
             {
                 Id = e.Id,
                 Name = e.Name,
                 Surname = e.Surname,
                 Role = e.Role,
                 Position = e.Position,
+                Username = e.UserName,
                 Email = e.Email,
                 PhoneNumber = e.PhoneNumber,
                 CreatedAt = e.CreatedAt,
@@ -54,7 +55,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
         
         _logger.LogInformation("Returned {Count} Shopper Assistants out of {Total}", shopperAssistants.Count, totalCount);
         
-        return new PagedResponse<ShopperAssistantResponse>()
+        return new PagedResponse<ShopperAssistantResponse>
         {
             Items = shopperAssistants,
             PageNumber = request.PageNumber,

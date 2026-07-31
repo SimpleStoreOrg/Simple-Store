@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
@@ -9,6 +10,7 @@ namespace UserService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "ShopperAssistant")]
 public class CustomerController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -34,14 +36,14 @@ public class CustomerController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateCustomer(CreateUserRequest request)
+    public async Task<IActionResult> CreateCustomer(CreateCustomerRequest request)
     {
         var result = await _mediator.Send(new CreateCustomerCommand(request));
         return Ok(result);
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(long id, UpdateUserRequest request)
+    public async Task<IActionResult> UpdateUser(long id, UpdateCustomerRequest request)
     {
         var result = await _mediator.Send(new UpdateCustomerCommand(id, request));
         return Ok(result);

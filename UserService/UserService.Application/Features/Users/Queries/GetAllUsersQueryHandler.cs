@@ -43,6 +43,7 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, PagedRe
                 Name = u.Name,
                 Surname = u.Surname,
                 Role = u.Role,
+                Username = u.UserName,
                 Email = u.Email,
                 PhoneNumber = u.PhoneNumber,
                 CreatedAt = u.CreatedAt,
@@ -51,7 +52,7 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, PagedRe
         
         _logger.LogInformation("Returned {Count} customers out of {Total}", users.Count, totalCount);
 
-        return new PagedResponse<UserResponse>()
+        return new PagedResponse<UserResponse>
         {
             Items = users,
             PageNumber = request.PageNumber,
