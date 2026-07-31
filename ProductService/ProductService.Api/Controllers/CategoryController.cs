@@ -10,7 +10,7 @@ using ProductService.Application.Features.Categories.Queries;
 namespace ProductService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant")]
+[Authorize(Roles = "ShopperAssistant,Customer")]
 public class CategoryController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,7 +21,7 @@ public class CategoryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<PagedResponse<CategoryResponse>>> GetAllCategories([FromQuery] int pageNumber = 1,
+    public async Task<ActionResult<PagedResponse<CategoryResponse>>> GetAllCategoriesAsync([FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllCategoriesQuery(pageNumber, pageSize));
@@ -29,28 +29,28 @@ public class CategoryController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetCategoryById(int id)
+    public async Task<IActionResult> GetCategoryByIdAsync(int id)
     {
         var result = await _mediator.Send(new GetCategoryByIdQuery(id));
         return Ok(result);
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateCategory(CreateCategoryRequest request)
+    public async Task<IActionResult> CreateCategoryAsync(CreateCategoryRequest request)
     {
         var result = await _mediator.Send(new CreateCategoryCommand(request));
         return Ok(result);
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryRequest request)
+    public async Task<IActionResult> UpdateCategoryAsync(int id, UpdateCategoryRequest request)
     {
         var result = await _mediator.Send(new UpdateCategoryCommand(id, request));
         return Ok(result);
     }
     
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCategory(int id)
+    public async Task<IActionResult> DeleteCategoryAsync(int id)
     {
         await _mediator.Send(new DeleteCategoryCommand(id));
         return NoContent();
