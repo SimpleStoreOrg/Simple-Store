@@ -6,5 +6,5 @@ namespace OrderService.Application.Interfaces.External;
 public interface IUserApi
 {
     [Get("/api/User/{id}")]
-    Task<UserResponse?> GetUserById(long id);
+    Task<UserResponse?> GetUserById(long id, [Header("Authorization")] string? authorization);
 }

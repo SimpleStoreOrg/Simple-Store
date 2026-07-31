@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.DTOs.External;
@@ -17,13 +18,15 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<PayOrderCommandHandler> _logger;
     private readonly IProductApi _productApi;
+    private readonly IHttpContextAccessor _accessor;
 
     public PayOrderCommandHandler(IOrderServiceDbContext dbContext, ILogger<PayOrderCommandHandler> logger,
-        IProductApi productApi)
+        IProductApi productApi, IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
         _productApi = productApi;
+        _accessor = accessor;
     }
     public async Task<PaymentResponse> Handle(PayOrderCommand request, CancellationToken cancellationToken)
     {
@@ -56,12 +59,14 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
         }
         
         var change = request.AmountPaid - total;
+
+        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
         
         try
         {
             foreach (var item in order.OrderItems)
             {
-                var product = await _productApi.GetProductById(item.ProductId);
+                var product = await _productApi.GetProductById(item.ProductId, token);
                 
                 if (product == null)
                 {
@@ -79,7 +84,7 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
                 await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest
                 {
                     Quantity = item.Quantity
-                });
+                }, token);
             }
 
             order.Status = OrderStatus.Completed;
