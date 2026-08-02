@@ -37,11 +37,6 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
         {
             throw new InvalidOrderException("Order is cancelled by Shop or Customer");
         }
-        
-        if (order.Status != OrderStatus.New)
-        {
-            throw new InvalidOrderException("Only new orders can be cancelled");
-        }
 
         try
         {

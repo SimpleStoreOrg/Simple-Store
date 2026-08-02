@@ -14,14 +14,13 @@ public class OrderServiceDbContext : DbContext, IOrderServiceDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Ignore(typeof(DbSet<BaseEntity<long>>));
+
+        modelBuilder.Entity<OrderEntity>()
+            .HasQueryFilter(x => x.DeletedAt == null);
+        
         base.OnModelCreating(modelBuilder);
     }
 
     public DbSet<OrderEntity> Orders { get; set; }
     public DbSet<OrderItemsEntity> OrderItems { get; set; }
-
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-    {
-        return base.SaveChangesAsync(cancellationToken);
-    }
 }

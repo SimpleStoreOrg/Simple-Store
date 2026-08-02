@@ -62,7 +62,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             var order = new OrderEntity
             {
                 CustomerId = customer.Id,
-                CreatedAt = DateTime.UtcNow.AddHours(5),
                 Status = OrderStatus.New,
                 PickUpDeadline = DateTime.UtcNow.AddHours(5).AddMinutes(30),
                 OrderItems = new List<OrderItemsEntity>()
@@ -109,8 +108,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                 CustomerId = order.CustomerId,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
-                UpdatedAt = order.UpdatedAt,
-                DeletedAt = order.DeletedAt,
                 Items = order.OrderItems.Select(oi => new OrderItemResponse()
                 {
                     ProductId = oi.ProductId,

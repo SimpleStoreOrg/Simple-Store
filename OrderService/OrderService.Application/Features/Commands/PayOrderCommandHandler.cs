@@ -46,6 +46,12 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
             throw new OrderAlreadyPaidException(request.OrderId);
         }
 
+        if (order.Status == OrderStatus.New || order.Status == OrderStatus.Accepted ||
+            order.Status == OrderStatus.Collecting)
+        {
+            throw new InvalidOrderException("Order must be paid when its status is Ready To Go");
+        }
+
         if (order.Status == OrderStatus.CancelledByShop || order.Status == OrderStatus.CancelledByCustomer)
         {
             throw new InvalidOrderException("Order is cancelled by Shop or Customer");

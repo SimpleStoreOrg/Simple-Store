@@ -9,6 +9,7 @@ using OrderService.Application.Features.Validators;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Application.Interfaces.External;
 using OrderService.Infrastructure;
+using OrderService.Infrastructure.Interceptors;
 using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,10 +75,14 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Appli
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 
-builder.Services.AddDbContext<OrderServiceDbContext>(options =>
+builder.Services.AddDbContext<OrderServiceDbContext>((sp, options) =>
 {
     options.UseNpgsql(connectionString);
+
+    options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
 });
+
+builder.Services.AddScoped<AuditInterceptor>();
 
 builder.Services.AddScoped<IOrderServiceDbContext>(provider => provider.GetRequiredService<OrderServiceDbContext>());
 
