@@ -6,7 +6,7 @@ using UserService.Application.Interfaces.Data;
 
 namespace UserService.Application.Features.Customers.Commands;
 
-public record DeleteCustomerCommand(long CustomerId) : IRequest, IRequest<bool>;
+public record DeleteCustomerCommand(long CustomerId) : IRequest<bool>;
 
 public class DeleteCustomerCommandHandler : IRequestHandler<DeleteCustomerCommand, bool>
 {

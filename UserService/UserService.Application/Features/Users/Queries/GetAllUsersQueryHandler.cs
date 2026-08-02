@@ -47,8 +47,9 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, PagedRe
                 Email = u.Email,
                 PhoneNumber = u.PhoneNumber,
                 CreatedAt = u.CreatedAt,
-                UpdatedAt = u.UpdatedAt
-            }).ToListAsync(cancellationToken);
+                UpdatedAt = u.UpdatedAt,
+                DeletedAt = u.DeletedAt
+            }).IgnoreQueryFilters().ToListAsync(cancellationToken);
         
         _logger.LogInformation("Returned {Count} customers out of {Total}", users.Count, totalCount);
 

@@ -65,7 +65,6 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         shopperAssistant.Position = request.Request.Position;
         shopperAssistant.UserName = request.Request.Username;
         shopperAssistant.PhoneNumber = phoneNumber;
-        shopperAssistant.UpdatedAt = DateTime.UtcNow.AddHours(5);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

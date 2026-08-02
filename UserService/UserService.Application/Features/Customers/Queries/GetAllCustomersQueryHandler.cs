@@ -48,7 +48,8 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
                 Email = c.Email,
                 PhoneNumber = c.PhoneNumber,
                 CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
+                UpdatedAt = c.UpdatedAt,
+                DeletedAt = c.DeletedAt
             }).ToListAsync(cancellationToken);
         
         _logger.LogInformation("Returned {Count} customers out of {Total}", customers.Count, totalCount);

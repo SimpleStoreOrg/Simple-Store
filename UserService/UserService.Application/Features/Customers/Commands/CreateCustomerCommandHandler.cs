@@ -51,8 +51,7 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Email = email,
             UserName = request.Request.Username,
-            PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow.AddHours(5)
+            PhoneNumber = phoneNumber
         };
 
         await _dbContext.Customers.AddAsync(customer, cancellationToken);

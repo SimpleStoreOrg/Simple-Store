@@ -40,7 +40,8 @@ public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery,
             Email = customer.Email,
             PhoneNumber = customer.PhoneNumber,
             CreatedAt = customer.CreatedAt,
-            UpdatedAt = customer.UpdatedAt
+            UpdatedAt = customer.UpdatedAt,
+            DeletedAt = customer.DeletedAt
         };
     }
 }

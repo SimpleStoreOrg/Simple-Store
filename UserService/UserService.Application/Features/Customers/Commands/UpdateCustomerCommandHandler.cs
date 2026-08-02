@@ -58,7 +58,6 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
         customer.Email = email;
         customer.UserName = request.Request.Username;
         customer.PhoneNumber = phoneNumber;
-        customer.UpdatedAt = DateTime.UtcNow.AddHours(5);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

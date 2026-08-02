@@ -6,7 +6,7 @@ using UserService.Application.Interfaces.Data;
 
 namespace UserService.Application.Features.ShopperAssistants.Commands;
 
-public record DeleteShopperAssistantCommand(long ShopperAssistantId) : IRequest, IRequest<bool>;
+public record DeleteShopperAssistantCommand(long ShopperAssistantId) : IRequest<bool>;
 
 public class DeleteShopperAssistantCommandHandler : IRequestHandler<DeleteShopperAssistantCommand, bool>
 {

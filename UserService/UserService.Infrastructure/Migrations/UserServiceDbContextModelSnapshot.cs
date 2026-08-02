@@ -87,7 +87,7 @@ namespace UserService.Infrastructure.Migrations
                     b.Property<string>("Surname")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserName")
