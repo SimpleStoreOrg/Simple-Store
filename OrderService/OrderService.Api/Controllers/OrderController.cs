@@ -46,12 +46,12 @@ public class OrderController : ControllerBase
         await _mediator.Send(new AssignOrderCommand(id, request));
         return Ok();
     }
-    
-    [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelOrderAsync(long id)
+
+    [HttpPost("{id}/change-orderstatus")]
+    public async Task<IActionResult> ChangeOrderStatusAsync(long id, UpdateOrderStatusRequest request)
     {
-        await _mediator.Send(new CancelOrderCommand(id));
-        return NoContent();
+        await _mediator.Send(new ChangeOrderStatusCommand(id, request));
+        return Ok();
     }
     
     [HttpPost("{id}/pay")]

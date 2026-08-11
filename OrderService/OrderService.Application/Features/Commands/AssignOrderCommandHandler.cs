@@ -16,15 +16,15 @@ public class AssignOrderCommandHandler : IRequestHandler<AssignOrderCommand>
 {
     private readonly IOrderServiceDbContext _dbContext;
     private ILogger<AssignOrderCommandHandler> _logger;
-    private readonly IUserApi _userApi;
+    private readonly IShopperAssistantApi _shopperAssistantApi;
     private readonly IHttpContextAccessor _accessor;
 
     public AssignOrderCommandHandler(IOrderServiceDbContext dbContext, ILogger<AssignOrderCommandHandler> logger,
-        IUserApi userApi, IHttpContextAccessor accessor)
+        IShopperAssistantApi shopperAssistantApi, IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _userApi = userApi;
+        _shopperAssistantApi = shopperAssistantApi;
         _accessor = accessor;
     }
     public async Task Handle(AssignOrderCommand request, CancellationToken cancellationToken)
@@ -41,8 +41,9 @@ public class AssignOrderCommandHandler : IRequestHandler<AssignOrderCommand>
         }
 
         var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
-        
-        var shopperAssistant = await _userApi.GetUserById(request.Request.ShopperAssistantId, token);
+
+        var shopperAssistant =
+            await _shopperAssistantApi.GetShopperAssistantById(request.Request.ShopperAssistantId, token);
         
         if (shopperAssistant == null)
         {

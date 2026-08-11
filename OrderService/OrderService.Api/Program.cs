@@ -23,7 +23,12 @@ builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();
 
-builder.Services.AddRefitClient<IUserApi>().ConfigureHttpClient(c =>
+builder.Services.AddRefitClient<ICustomerApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7003");
+});
+
+builder.Services.AddRefitClient<IShopperAssistantApi>().ConfigureHttpClient(c =>
 {
     c.BaseAddress = new Uri("https://localhost:7003");
 });

@@ -19,19 +19,19 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
     private readonly IProductApi _productApi;
-    private readonly IUserApi _userApi;
+    private readonly ICustomerApi _customerApi;
     private readonly IHttpContextAccessor _accessor;
 
     public CreateOrderCommandHandler(
         IOrderServiceDbContext dbContext,
         ILogger<CreateOrderCommandHandler> logger,
         IProductApi productApi,
-        IUserApi userApi, IHttpContextAccessor accessor)
+        ICustomerApi customerApi, IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
         _productApi = productApi;
-        _userApi = userApi;
+        _customerApi = customerApi;
         _accessor = accessor;
     }
     
@@ -48,7 +48,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
 
         var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
         
-        var customer = await _userApi.GetUserById(request.Request.CustomerId, token);
+        var customer = await _customerApi.GetCustomerById(request.Request.CustomerId, token);
         
         if (customer == null)
         {
