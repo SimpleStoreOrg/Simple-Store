@@ -48,7 +48,6 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         product.Price = request.Request.Price;
         product.Stock = request.Request.Stock;
         product.CategoryId = request.Request.CategoryId;
-        product.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         
@@ -63,8 +62,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             Stock = product.Stock,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt,
-            DeletedAt = product.DeletedAt
+            UpdatedAt = product.UpdatedAt
         };
     }
 }

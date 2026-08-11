@@ -39,8 +39,7 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
             Name = request.Request.Name,
             Price = request.Request.Price,
             Stock = request.Request.Stock,
-            CategoryId = request.Request.CategoryId,
-            CreatedAt = DateTime.UtcNow
+            CategoryId = request.Request.CategoryId
         };
         await _dbContext.Products.AddAsync(product, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);

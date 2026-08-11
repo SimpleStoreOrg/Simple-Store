@@ -7,7 +7,7 @@ public class ProductResponse
     public decimal Price { get; set; }
     public decimal Stock { get; set; }
     public long CategoryId { get; set; }
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

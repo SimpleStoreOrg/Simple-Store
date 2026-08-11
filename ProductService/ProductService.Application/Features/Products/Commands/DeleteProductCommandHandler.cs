@@ -6,7 +6,7 @@ using ProductService.Application.Interfaces.Data;
 
 namespace ProductService.Application.Features.Products.Commands;
 
-public record DeleteProductCommand(int ProductId) : IRequest, IRequest<bool>;
+public record DeleteProductCommand(int ProductId) : IRequest<bool>;
 
 public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, bool>
 {

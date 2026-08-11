@@ -56,8 +56,7 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
             Position = request.Request.Position,
             UserName = request.Request.Username,
             Email = email,
-            PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow.AddHours(5)
+            PhoneNumber = phoneNumber
         };
 
         await _dbContext.ShopperAssistants.AddAsync(shopperAssistant, cancellationToken);

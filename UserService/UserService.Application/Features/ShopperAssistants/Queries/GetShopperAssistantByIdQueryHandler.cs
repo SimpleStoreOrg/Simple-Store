@@ -41,7 +41,8 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
             Email = shopperAssistant.Email,
             PhoneNumber = shopperAssistant.PhoneNumber,
             CreatedAt = shopperAssistant.CreatedAt,
-            UpdatedAt = shopperAssistant.UpdatedAt
+            UpdatedAt = shopperAssistant.UpdatedAt,
+            DeletedAt = shopperAssistant.DeletedAt
         };
     }
 }

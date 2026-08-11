@@ -14,6 +14,10 @@ public class UserServiceDbContext : DbContext, IUserServiceDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Ignore(typeof(DbSet<BaseEntity<long>>));
+        
+        modelBuilder.Entity<UserEntity>()
+            .HasQueryFilter(x => x.DeletedAt == null);
+        
         base.OnModelCreating(modelBuilder);
     }
 

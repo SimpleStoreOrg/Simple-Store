@@ -47,7 +47,6 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
 
         category.Name = request.Request.Name;
         category.ParentCategoryId = request.Request.ParentCategoryId;
-        category.UpdatedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Category {CategoryId} updated successfully. Name: {CategoryName}", request.CategoryId,
@@ -59,8 +58,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
             Name = category.Name,
             ParentCategoryId = category.ParentCategoryId,
             CreatedAt = category.CreatedAt,
-            UpdatedAt = category.UpdatedAt,
-            DeletedAt = category.DeletedAt
+            UpdatedAt = category.UpdatedAt
         };
     }
 }

@@ -22,7 +22,8 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserRes
     
     public async Task<UserResponse> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+        var user = await _dbContext.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
         if (user == null)
         {
             _logger.LogWarning("User with ID {UserId} not found", request.UserId);
@@ -39,7 +40,8 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserRes
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
             CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
+            UpdatedAt = user.UpdatedAt,
+            DeletedAt = user.DeletedAt
         };
     }
 }

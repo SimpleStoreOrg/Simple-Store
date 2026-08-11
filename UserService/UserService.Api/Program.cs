@@ -9,6 +9,7 @@ using UserService.Application.Features.ShopperAssistants.Validators;
 using UserService.Application.Interfaces.Data;
 using UserService.Application.Services;
 using UserService.Infrastructure;
+using UserService.Infrastructure.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,10 +66,14 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyMarker).Assembly));
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
-builder.Services.AddDbContext<UserServiceDbContext>(options =>
+builder.Services.AddDbContext<UserServiceDbContext>((sp, options) =>
 {
     options.UseNpgsql(connectionString);
+    
+    options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
 });
+
+builder.Services.AddScoped<AuditInterceptor>();
 
 builder.Services.AddScoped<IUserServiceDbContext>(provider =>
     provider.GetRequiredService<UserServiceDbContext>());

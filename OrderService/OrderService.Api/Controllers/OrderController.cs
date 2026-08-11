@@ -20,31 +20,38 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllOrders([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetAllOrdersAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         var result = await _mediator.Send(new GetAllOrdersQuery(pageNumber, pageSize));
         return Ok(result);
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<OrderResponse>> GetOrderById(long id)
+    public async Task<ActionResult<OrderResponse>> GetOrderByIdAsync(long id)
     {
         var result = await _mediator.Send(new GetOrderByIdQuery(id));
         return Ok(result);
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
+    public async Task<IActionResult> CreateOrderAsync(CreateOrderRequest request)
     {
         var result = await _mediator.Send(new CreateOrderCommand(request));
         return Ok(result);
     }
-    
-    [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelOrder(long id)
+
+    [HttpPost("{id}/assign-assistant")]
+    public async Task<IActionResult> AssignOrderAsync(long id, AssignOrderRequest request)
     {
-        await _mediator.Send(new CancelOrderCommand(id));
-        return NoContent();
+        await _mediator.Send(new AssignOrderCommand(id, request));
+        return Ok();
+    }
+
+    [HttpPost("{id}/change-orderstatus")]
+    public async Task<IActionResult> ChangeOrderStatusAsync(long id, UpdateOrderStatusRequest request)
+    {
+        await _mediator.Send(new ChangeOrderStatusCommand(id, request));
+        return Ok();
     }
     
     [HttpPost("{id}/pay")]

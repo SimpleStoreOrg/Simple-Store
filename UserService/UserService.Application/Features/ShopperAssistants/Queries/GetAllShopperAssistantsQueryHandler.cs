@@ -50,7 +50,8 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
                 Email = e.Email,
                 PhoneNumber = e.PhoneNumber,
                 CreatedAt = e.CreatedAt,
-                UpdatedAt = e.UpdatedAt
+                UpdatedAt = e.UpdatedAt,
+                DeletedAt = e.DeletedAt
             }).ToListAsync(cancellationToken);
         
         _logger.LogInformation("Returned {Count} Shopper Assistants out of {Total}", shopperAssistants.Count, totalCount);

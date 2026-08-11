@@ -8,6 +8,7 @@ using ProductService.Application;
 using ProductService.Application.Features.Categories.Validators;
 using ProductService.Application.Interfaces.Data;
 using ProductService.Infrastructure;
+using ProductService.Infrastructure.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,10 +62,14 @@ builder.Services.AddMediatR(cfg =>
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 
-builder.Services.AddDbContext<ProductServiceDbContext>(options =>
+builder.Services.AddDbContext<ProductServiceDbContext>((sp, options) =>
 {
     options.UseNpgsql(connectionString);
+
+    options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
 });
+
+builder.Services.AddScoped<AuditInterceptor>();
 
 builder.Services.AddScoped<IProductServiceDbContext>(provider =>
     provider.GetRequiredService<ProductServiceDbContext>());

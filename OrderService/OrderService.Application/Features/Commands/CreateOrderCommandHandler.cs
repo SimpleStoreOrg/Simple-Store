@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.DTOs.Request;
 using OrderService.Application.DTOs.Response;
@@ -18,18 +19,20 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
     private readonly IProductApi _productApi;
-    private readonly IUserApi _userApi;
+    private readonly ICustomerApi _customerApi;
+    private readonly IHttpContextAccessor _accessor;
 
     public CreateOrderCommandHandler(
         IOrderServiceDbContext dbContext,
         ILogger<CreateOrderCommandHandler> logger,
         IProductApi productApi,
-        IUserApi userApi)
+        ICustomerApi customerApi, IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
         _productApi = productApi;
-        _userApi = userApi;
+        _customerApi = customerApi;
+        _accessor = accessor;
     }
     
     public async Task<OrderResponse> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -42,8 +45,10 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         request.Request.Items = request.Request.Items
             .DistinctBy(e => e.ProductId)
             .ToList();
+
+        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
         
-        var customer = await _userApi.GetUserById(request.Request.CustomerId);
+        var customer = await _customerApi.GetCustomerById(request.Request.CustomerId, token);
         
         if (customer == null)
         {
@@ -57,22 +62,21 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             var order = new OrderEntity
             {
                 CustomerId = customer.Id,
-                CreatedAt = DateTime.UtcNow,
                 Status = OrderStatus.New,
-                PickUpDeadline = DateTime.UtcNow.AddMinutes(30),
+                PickUpDeadline = DateTime.UtcNow.AddHours(5).AddMinutes(30),
                 OrderItems = new List<OrderItemsEntity>()
             };
             
             foreach (var item in request.Request.Items)
             {
-                var product = await _productApi.GetProductById(item.ProductId);
-
                 if (item.Quantity <= 0)
                 {
                     _logger.LogWarning("Invalid quantity for product {ProductId}", item.ProductId);
                     throw new InvalidQuantityException(item.ProductId);
                 }
-            
+                
+                var product = await _productApi.GetProductById(item.ProductId, token);
+                
                 if (item.Quantity > product.Stock)
                 {
                     _logger.LogWarning("Insufficient stock for product {ProductId}. Available: {Stock}, Requested: {Quantity}",
@@ -104,8 +108,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                 CustomerId = order.CustomerId,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
-                UpdatedAt = order.UpdatedAt,
-                DeletedAt = order.DeletedAt,
                 Items = order.OrderItems.Select(oi => new OrderItemResponse()
                 {
                     ProductId = oi.ProductId,
