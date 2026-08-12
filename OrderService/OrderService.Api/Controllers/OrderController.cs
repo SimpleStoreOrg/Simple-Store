@@ -47,10 +47,10 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("{id}/change-orderstatus")]
+    [HttpPost("{id}/update-orderstatus")]
     public async Task<IActionResult> ChangeOrderStatusAsync(long id, UpdateOrderStatusRequest request)
     {
-        await _mediator.Send(new ChangeOrderStatusCommand(id, request));
+        await _mediator.Send(new UpdateOrderStatusCommand(id, request));
         return Ok();
     }
     

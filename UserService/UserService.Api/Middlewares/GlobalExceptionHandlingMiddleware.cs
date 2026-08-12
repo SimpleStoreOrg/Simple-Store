@@ -1,5 +1,4 @@
 using System.Net.Mime;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.Exceptions;
 
@@ -36,9 +35,7 @@ public class GlobalExceptionHandlingMiddleware : IMiddleware
                     Instance = context.Request.Path
                 };
                 
-                var json = JsonSerializer.Serialize(problem);
-                
-                await context.Response.WriteAsync(json);
+                await context.Response.WriteAsJsonAsync(problem);
             }
             
             else
