@@ -1,39 +1,58 @@
+using System.Net.Mime;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using UserService.Application.Exceptions;
 
 namespace UserService.Api.Middlewares;
 
 public class GlobalExceptionHandlingMiddleware : IMiddleware
 {
+    private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
+    public GlobalExceptionHandlingMiddleware(ILogger<GlobalExceptionHandlingMiddleware> logger)
+    {
+        _logger = logger;
+    }
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try
         {
-            Console.WriteLine("Before next");
             await next(context);
-            Console.WriteLine("After next");
         }
         catch (Exception e)
         {
-            context.Response.ContentType = "application/json";
+            _logger.LogError(e, e.Message);
+            
+            context.Response.ContentType = MediaTypeNames.Application.Json;
+            
             if (e is BaseException baseException)
             {
                 context.Response.StatusCode = baseException.StatusCode;
 
-                await context.Response.WriteAsJsonAsync(new
+                var problem = new ProblemDetails
                 {
-                    status = context.Response.StatusCode,
-                    message = baseException.Message
-                });
+                    Status = baseException.StatusCode,
+                    Title = "Server error",
+                    Detail = baseException.Message,
+                    Instance = context.Request.Path
+                };
+                
+                var json = JsonSerializer.Serialize(problem);
+                
+                await context.Response.WriteAsync(json);
             }
             
             else
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 
-                await context.Response.WriteAsJsonAsync(new
+                var problem = new ProblemDetails
                 {
-                    message = "Internal server error"
-                });
+                    Status = StatusCodes.Status500InternalServerError,
+                    Detail = "An internal server error has occured",
+                    Instance = context.Request.Path
+                };
+
+                await context.Response.WriteAsJsonAsync(problem);
             }
         }
     }

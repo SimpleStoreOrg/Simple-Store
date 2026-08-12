@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 
