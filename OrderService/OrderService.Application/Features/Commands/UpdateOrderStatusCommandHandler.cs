@@ -35,7 +35,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (order.Status == OrderStatus.New)
         {
             _logger.LogWarning("Order with ID {OrderId} must be assigned first", order.Id);
-            throw new InvalidOperationException("Order must be assigned to the Shopper Assistant");
+            throw new InvalidOrderException("Order must be assigned to the Shopper Assistant");
         }
 
         if (order.Status == OrderStatus.Completed)
@@ -54,7 +54,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             request.Request.Status == OrderStatus.CancelledByCustomer || request.Request.Status == OrderStatus.Accepted)
         {
             _logger.LogWarning("Requested status cannot be New, Accepted, Completed, and Cancelled by Customer");
-            throw new InvalidOperationException("Wrong request");
+            throw new InvalidOrderException("Wrong request");
         }
 
         if ((order.Status == OrderStatus.Accepted && request.Request.Status != OrderStatus.Collecting) ||
@@ -63,7 +63,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             order.Status == request.Request.Status) 
         {
             _logger.LogWarning("Requested status must be in ascending order, not itself again also");
-            throw new InvalidOperationException("Wrong request");
+            throw new InvalidOrderException("Wrong request");
         }
 
         try
