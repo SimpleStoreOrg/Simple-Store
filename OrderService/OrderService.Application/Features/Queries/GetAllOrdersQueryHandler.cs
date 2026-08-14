@@ -4,10 +4,18 @@ using Microsoft.Extensions.Logging;
 using OrderService.Application.Common;
 using OrderService.Application.DTOs.Response;
 using OrderService.Application.Interfaces.Data;
+using OrderService.Domain.Enums;
 
 namespace OrderService.Application.Features.Queries;
 
-public record GetAllOrdersQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<OrderResponse>>;
+public record GetAllOrdersQuery(
+    int PageNumber,
+    int PageSize,
+    long[]? CustomerIds = null,
+    long[]? ShopperAssistantIds = null,
+    OrderStatus? Statuses = null,
+    DateTime? CreatedAtFrom = null,
+    DateTime? CreatedAtTo = null) : IRequest<PagedResponse<OrderResponse>>;
 
 public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, PagedResponse<OrderResponse>>
 {
@@ -32,12 +40,37 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
         
         var query = _dbContext.Orders.AsQueryable();
 
+        if (request.CustomerIds != null && request.CustomerIds.Length > 0) 
+        {
+            query = query.Where(o=> request.CustomerIds.Contains(o.CustomerId));
+        }
+
+        if (request.ShopperAssistantIds != null && request.ShopperAssistantIds.Length > 0)
+        {
+            query = query.Where(o => request.ShopperAssistantIds.Contains(o.ShopperAssistantId));
+        }
+
+        if (request.Statuses.HasValue)
+        {
+            query = query.Where(o => o.Status == request.Statuses.Value);
+        }
+
+        if (request.CreatedAtFrom.HasValue)
+        {
+            query = query.Where(o => o.CreatedAt >= request.CreatedAtFrom);
+        }
+
+        if (request.CreatedAtTo.HasValue)
+        {
+            query = query.Where(o => o.CreatedAt <= request.CreatedAtTo);
+        }
+
         var totalCount = await query.CountAsync(cancellationToken);
 
         var orders = await query.OrderBy(o => o.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(o => new OrderResponse()
+            .Select(o => new OrderResponse
             {
                 Id = o.Id,
                 CustomerId = o.CustomerId,
