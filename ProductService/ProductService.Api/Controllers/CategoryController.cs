@@ -21,10 +21,17 @@ public class CategoryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<PagedResponse<CategoryResponse>>> GetAllCategoriesAsync([FromQuery] int pageNumber = 1,
+    public async Task<ActionResult<PagedResponse<CategoryResponse>>> GetAllCategoriesAsync(
+        [FromQuery] string? categoryName,
+        [FromQuery] DateTime? createdAtFrom,
+        [FromQuery] DateTime? createdAtTo,
+        [FromQuery] long?[]? parentCategoryIds,
+        [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
-        var result = await _mediator.Send(new GetAllCategoriesQuery(pageNumber, pageSize));
+        var result =
+            await _mediator.Send(new GetAllCategoriesQuery(pageNumber, pageSize, categoryName, createdAtFrom,
+                createdAtTo, parentCategoryIds));
         return Ok(result);
     }
     

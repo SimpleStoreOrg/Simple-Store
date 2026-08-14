@@ -3,11 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Response;
+using ProductService.Application.Features.Categories.Queries;
 using ProductService.Application.Interfaces.Data;
 
 namespace ProductService.Application.Features.Categories.Queries;
 
-public record GetAllCategoriesQuery(int PageNumber, int PageSize) : IRequest<PagedResponse<CategoryResponse>>;
+public record GetAllCategoriesQuery(
+    int PageNumber,
+    int PageSize,
+    string? CategoryName = null,
+    DateTime? CreatedAtFrom = null,
+    DateTime? CreatedAtTo = null,
+    long?[]? ParentCategoryIds = null) : IRequest<PagedResponse<CategoryResponse>>;
 
 public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, PagedResponse<CategoryResponse>>
 {
@@ -35,6 +42,26 @@ public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuer
         }
 
         var query = _dbContext.Categories.AsQueryable();
+        
+        if (!string.IsNullOrWhiteSpace(request.CategoryName))
+        {
+            query = query.Where(c => c.Name.Trim().ToLower() == request.CategoryName.Trim().ToLower());
+        }
+
+        if (request.CreatedAtFrom.HasValue)
+        {
+            query = query.Where(c => c.CreatedAt >= request.CreatedAtFrom);
+        }
+
+        if (request.CreatedAtTo.HasValue)
+        {
+            query = query.Where(c => c.CreatedAt <= request.CreatedAtTo);
+        }
+
+        if (request.ParentCategoryIds != null && request.ParentCategoryIds.Length > 0) 
+        {
+            query = query.Where(c => request.ParentCategoryIds.Contains(c.ParentCategoryId));
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
 
