@@ -4,6 +4,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using UserService.Api.Middlewares;
 using UserService.Application;
 using UserService.Application.Features.ShopperAssistants.Validators;
 using UserService.Application.Interfaces.Data;
@@ -16,6 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 
@@ -86,6 +90,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
