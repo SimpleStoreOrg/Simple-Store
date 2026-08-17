@@ -15,12 +15,15 @@ public record AssignOrderCommand(long OrderId, AssignOrderRequest Request) : IRe
 public class AssignOrderCommandHandler : IRequestHandler<AssignOrderCommand>
 {
     private readonly IOrderServiceDbContext _dbContext;
-    private ILogger<AssignOrderCommandHandler> _logger;
+    private readonly ILogger<AssignOrderCommandHandler> _logger;
     private readonly IShopperAssistantApi _shopperAssistantApi;
     private readonly IHttpContextAccessor _accessor;
 
-    public AssignOrderCommandHandler(IOrderServiceDbContext dbContext, ILogger<AssignOrderCommandHandler> logger,
-        IShopperAssistantApi shopperAssistantApi, IHttpContextAccessor accessor)
+    public AssignOrderCommandHandler(
+        IOrderServiceDbContext dbContext,
+        ILogger<AssignOrderCommandHandler> logger,
+        IShopperAssistantApi shopperAssistantApi,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
