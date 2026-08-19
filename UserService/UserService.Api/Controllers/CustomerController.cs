@@ -21,8 +21,9 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<UserResponse>> GetAllCustomersAsync([FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<UserResponse>> GetAllCustomersAsync(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize)
     {
         var result = await _mediator.Send(new GetAllCustomersQuery(pageNumber, pageSize));
         return Ok(result);

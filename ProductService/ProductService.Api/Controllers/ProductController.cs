@@ -21,10 +21,18 @@ public class ProductController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<ActionResult<PagedResponse<ProductResponse>>> GetAllProductsAsync([FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<PagedResponse<ProductResponse>>> GetAllProductsAsync(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        [FromQuery] bool? isAvailable,
+        [FromQuery] decimal? minPrice,
+        [FromQuery] decimal? maxPrice,
+        [FromQuery] long[]? categoryIds,
+        [FromQuery] DateTime? createdAtFrom,
+        [FromQuery] DateTime? createdAtTo)
     {
-        var result = await _mediator.Send(new GetAllProductsQuery(pageNumber, pageSize));
+        var result = await _mediator.Send(new GetAllProductsQuery(pageNumber, pageSize,
+            isAvailable, minPrice, maxPrice, categoryIds, createdAtFrom, createdAtTo));
         return Ok(result);
     }
 

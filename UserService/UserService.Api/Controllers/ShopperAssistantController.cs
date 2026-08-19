@@ -6,6 +6,7 @@ using UserService.Application.DTOs.Response;
 using UserService.Application.Features.Customers.Commands;
 using UserService.Application.Features.ShopperAssistants.Commands;
 using UserService.Application.Features.ShopperAssistants.Queries;
+using UserService.Domain.Enums;
 
 
 namespace UserService.Api.Controllers;
@@ -23,10 +24,13 @@ public class ShopperAssistantController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<UserResponse>> GetAllShopperAssistantsAsync([FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<UserResponse>> GetAllShopperAssistantsAsync(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        [FromQuery] ShopperAssistantPosition? positions)
     {
-        var result = await _mediator.Send(new GetAllShopperAssistantsQuery(pageNumber, pageSize));
+        var result = await _mediator.Send(new GetAllShopperAssistantsQuery(
+            pageNumber, pageSize, positions));
         return Ok(result);
     }
     

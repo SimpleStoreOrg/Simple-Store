@@ -5,6 +5,7 @@ using OrderService.Application.DTOs.Request;
 using OrderService.Application.DTOs.Response;
 using OrderService.Application.Features.Commands;
 using OrderService.Application.Features.Queries;
+using OrderService.Domain.Enums;
 
 namespace OrderService.Api.Controllers;
 [ApiController]
@@ -20,9 +21,18 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllOrdersAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetAllOrdersAsync(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        [FromQuery] long[]? customerIds,
+        [FromQuery] long[]? shopperAssistant,
+        [FromQuery] OrderStatus? statuses,
+        [FromQuery] DateTime? createdAtFrom,
+        [FromQuery] DateTime? createdAtTo)
     {
-        var result = await _mediator.Send(new GetAllOrdersQuery(pageNumber, pageSize));
+        var result =
+            await _mediator.Send(new GetAllOrdersQuery(pageNumber, pageSize, customerIds, shopperAssistant, statuses,
+                createdAtFrom, createdAtTo));
         return Ok(result);
     }
     

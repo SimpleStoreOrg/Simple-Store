@@ -42,7 +42,7 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<DateTime>("PickUpDeadline")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long?>("ShopperAssistantId")
+                    b.Property<long>("ShopperAssistantId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Status")
