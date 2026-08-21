@@ -85,6 +85,7 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
          return new ReviewProductResponse
          {
              Id = review.Id,
+             OrderId = review.OrderId,
              ProductId = review.ProductId,
              CustomerId = review.CustomerId,
              Rating = review.Rating,

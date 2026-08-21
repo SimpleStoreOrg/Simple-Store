@@ -4,15 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Common;
 using OrderService.Application.DTOs.External;
-using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Application.Interfaces.External;
+using ProductService.Application.Exceptions;
+using IncorrectPaginationException = OrderService.Application.Exceptions.IncorrectPaginationException;
 
 namespace OrderService.Application.Features.Queries;
 
 public record GetTopProductsByCategoryQuery(
     int? PageNumber = null,
-    int? PageSize = null)
+    int? PageSize = null,
+    long[]? CategoryIds = null)
     : IRequest<PagedResponse<TopProductsByCategoryResponse>>;
 
 public class
@@ -39,7 +41,7 @@ public class
         CancellationToken cancellationToken)
 
     {       
-        _logger.LogInformation("Fetching Order. Page: {PageNumber}, Size: {PageSize}", request.PageNumber, request.PageSize);
+        _logger.LogInformation("Fetching Top Products. Page: {PageNumber}, Size: {PageSize}", request.PageNumber, request.PageSize);
         if (request.PageNumber.HasValue && request.PageNumber.Value <= 0)
         {
             _logger.LogWarning("Page number {PageNumber}, must be greater than 0", request.PageNumber);
@@ -87,6 +89,12 @@ public class
                 Price = product.Price,
                 SoldQuantity = sale.SoldQuantity
             });
+        }
+
+        if (request.CategoryIds != null && request.CategoryIds.Length > 0)
+        {
+            categories = categories.Where(c => request
+                .CategoryIds.Contains(c.CategoryId)).ToList();
         }
 
         var totalCount = categories.Count;
