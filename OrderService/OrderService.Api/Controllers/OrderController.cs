@@ -70,4 +70,11 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(new PayOrderCommand(id, request.AmountPaid));
         return Ok(result);
     }
+
+    [HttpPost("reviewproduct")]
+    public async Task<IActionResult> ReviewProductAsync(ReviewProductRequest request)
+    {
+        await _mediator.Send(new ReviewProductCommand(request));
+        return NoContent();
+    }
 }
