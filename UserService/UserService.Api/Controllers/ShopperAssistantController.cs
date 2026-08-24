@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
-using UserService.Application.Features.Customers.Commands;
 using UserService.Application.Features.ShopperAssistants.Commands;
 using UserService.Application.Features.ShopperAssistants.Queries;
 using UserService.Domain.Enums;
@@ -13,7 +12,7 @@ namespace UserService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant")]
+[Authorize]
 public class ShopperAssistantController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -23,6 +22,7 @@ public class ShopperAssistantController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
     [HttpGet]
     public async Task<ActionResult<UserResponse>> GetAllShopperAssistantsAsync(
         [FromQuery] int? pageNumber,
@@ -34,6 +34,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetShopperAssistantByIdAsync(long id)
     {
@@ -41,6 +42,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
     [HttpPost]
     public async Task<IActionResult> CreateShopperAssistantAsync(CreateShopperAssistantRequest request)
     {
@@ -48,6 +50,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "ShopperAssistant,SuperAdmin,MarketAdmin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateShopperAssistantAsync(long id, UpdateShopperAssistantRequest request)
     {
@@ -55,10 +58,11 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUserAsync(long id)
+    public async Task<IActionResult> DeleteShopperAssistantAsync(long id)
     {
-        await _mediator.Send(new DeleteCustomerCommand(id));
+        await _mediator.Send(new DeleteShopperAssistantCommand(id));
         return NoContent();
     }
 }

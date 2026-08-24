@@ -31,7 +31,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
     {
         _logger.LogInformation("Updating Shopper Assistant with ID: {Id}", request.ShopperAssistantId);
 
-        var shopperAssistant = await _dbContext.Users.OfType<ShopperAssistantEntity>()
+        var shopperAssistant = await _dbContext.ShopperAssistants
             .FirstOrDefaultAsync(x => x.Id == request.ShopperAssistantId, cancellationToken: cancellationToken);
         
         if (shopperAssistant == null)
@@ -44,7 +44,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         var email = request.Request.Email?.Trim().ToLower();
         var phoneNumber = request.Request.PhoneNumber?.Trim().ToLower();
 
-        var exists = await _dbContext.Users
+        var exists = await _dbContext.ShopperAssistants
             .AnyAsync(e =>
                     e.Id != request.ShopperAssistantId && e.Role == RoleStatus.ShopperAssistant &&
                     (e.UserName!.Trim().ToLower() == username || e.Email!.Trim().ToLower() == email ||
