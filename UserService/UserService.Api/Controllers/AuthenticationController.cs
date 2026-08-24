@@ -23,10 +23,10 @@ public class AuthenticationController : ControllerBase
         return Ok(result);
     }
     
-    [HttpPost("register")]
-    public async Task<IActionResult> RegisterAsync(RegisterRequest request)
+    [HttpPost("registercustomer")]
+    public async Task<IActionResult> RegisterCustomerAsync(RegisterCustomerRequest request)
     {
-        await _mediator.Send(new RegisterCommand(request));
-        return Ok("User created");
+        await _mediator.Send(new RegisterCustomerCommand(request));
+        return Ok("Customer created");
     }
 }
