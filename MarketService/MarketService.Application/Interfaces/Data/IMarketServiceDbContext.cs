@@ -6,4 +6,5 @@ namespace MarketService_Application.Interfaces.Data;
 public interface IMarketServiceDbContext 
 {
     public DbSet<MarketEntity> Markets { get; set; }
+    Task<int> SaveChangesAsync(CancellationToken token);
 }

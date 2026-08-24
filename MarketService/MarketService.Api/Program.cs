@@ -2,6 +2,7 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MarketService_Application;
+using MarketService_Application.Features.Validators;
 using MarketService_Application.Interfaces.Data;
 using MarketService.Api.Middlewares;
 using MarketService.Infrastructure;
@@ -20,6 +21,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateMarketRequestValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
