@@ -57,9 +57,11 @@ public class GetAllMarketsQueryHandler : IRequestHandler<GetAllMarketsQuery, Pag
         }
 
         var markets = await query
+            .OrderBy(m=>m.Id)
             .Select(c => new MarketResponse
             {
                 Id = c.Id,
+                MarketAdminId = c.MarketAdminId,
                 Name = c.Name,
                 Location = c.Location,
                 Email = c.Email,

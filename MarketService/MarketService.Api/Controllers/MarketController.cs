@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MarketService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant")]
+[Authorize]
 public class MarketController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -18,6 +18,7 @@ public class MarketController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Roles = "Customer,SuperAdmin")]
     [HttpGet]
     public async Task<IActionResult> GetAllMarketsAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize,
         [FromQuery] string? marketName)
@@ -26,6 +27,7 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPost]
     public async Task<IActionResult> CreateMarketAsync(CreateMarketRequest request)
     {
@@ -33,6 +35,7 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateMarketAsync(long id, UpdateMarketRequest request)
     {
@@ -40,6 +43,7 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "SuperAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMarketAsync(long id)
     {

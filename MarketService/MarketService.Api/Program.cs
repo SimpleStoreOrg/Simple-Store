@@ -4,12 +4,14 @@ using FluentValidation.AspNetCore;
 using MarketService_Application;
 using MarketService_Application.Features.Validators;
 using MarketService_Application.Interfaces.Data;
+using MarketService_Application.Interfaces.External;
 using MarketService.Api.Middlewares;
 using MarketService.Infrastructure;
 using MarketService.Infrastructure.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,11 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateMarketRequestValidator>();
+
+builder.Services.AddRefitClient<IMarketAdminApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7003");
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
