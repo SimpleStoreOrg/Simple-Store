@@ -18,7 +18,7 @@ public class MarketController : ControllerBase
         _mediator = mediator;
     }
 
-    [Authorize(Roles = "Customer,SuperAdmin")]
+    [Authorize(Policy = "CustomerOrSuperAdmin")]
     [HttpGet]
     public async Task<IActionResult> GetAllMarketsAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize,
         [FromQuery] string? marketName)
@@ -27,7 +27,15 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Policy = "CustomerOrSuperAdmin")]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetMarketByIdAsync(long id)
+    {
+        var result = await _mediator.Send(new GetMarketByIdQuery(id));
+        return Ok(result);
+    }
+    
+    [Authorize(Policy = "SuperAdmin")]
     [HttpPost]
     public async Task<IActionResult> CreateMarketAsync(CreateMarketRequest request)
     {
@@ -35,7 +43,7 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateMarketAsync(long id, UpdateMarketRequest request)
     {
@@ -43,7 +51,7 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Policy = "SuperAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMarketAsync(long id)
     {

@@ -63,7 +63,22 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdmin", policy =>
+    {
+        policy.RequireRole("Admin");
+        policy.RequireClaim("AdminPosition", "SuperAdmin");
+    });
+    
+    options.AddPolicy("CustomerOrSuperAdmin", policy =>
+    {
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Customer") ||
+            (context.User.IsInRole("Admin") &&
+             context.User.HasClaim("AdminPosition", "SuperAdmin")));
+    });
+});
     
 
 builder.Services.AddControllers();
