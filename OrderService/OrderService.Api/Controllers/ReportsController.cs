@@ -6,7 +6,7 @@ using OrderService.Application.Features.Queries;
 namespace OrderService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant, Customer")]
+[Authorize]
 public class ReportsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -14,6 +14,8 @@ public class ReportsController : ControllerBase
     {
         _mediator = mediator;
     }
+    
+    [Authorize(Roles = "Admin")]
     [HttpGet("totalrevenue")]
     public async Task<IActionResult> GetTotalRevenueAsync(DateTime? from, DateTime? to)
     {
@@ -21,6 +23,7 @@ public class ReportsController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet("topproductsbycategory")]
     public async Task<IActionResult> GetTopProductsByCategoryAsync(
         [FromQuery] int? pageNumber,
@@ -33,6 +36,7 @@ public class ReportsController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet("reviewedproducts")]
     public async Task<IActionResult> GetAllReviewsAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize,
         [FromQuery] DateTime? reviewsFrom, [FromQuery] DateTime? reviewsTo)

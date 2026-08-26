@@ -10,7 +10,7 @@ using OrderService.Domain.Enums;
 namespace OrderService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant,Customer")]
+[Authorize] 
 public class OrderController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +20,7 @@ public class OrderController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet]
     public async Task<IActionResult> GetAllOrdersAsync(
         [FromQuery] int? pageNumber,
@@ -36,6 +37,7 @@ public class OrderController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet("{id}")]
     public async Task<ActionResult<OrderResponse>> GetOrderByIdAsync(long id)
     {
@@ -43,6 +45,7 @@ public class OrderController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Customer,Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateOrderAsync(CreateOrderRequest request)
     {
@@ -50,6 +53,7 @@ public class OrderController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpPost("{id}/assign-assistant")]
     public async Task<IActionResult> AssignOrderAsync(long id, AssignOrderRequest request)
     {
@@ -57,6 +61,7 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpPost("{id}/update-orderstatus")]
     public async Task<IActionResult> ChangeOrderStatusAsync(long id, UpdateOrderStatusRequest request)
     {
@@ -64,6 +69,7 @@ public class OrderController : ControllerBase
         return Ok();
     }
     
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpPost("{id}/pay")]
     public async Task<IActionResult> PayAsync(int id, PayOrderRequest request)
     {
@@ -71,6 +77,7 @@ public class OrderController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Customer,Admin")]
     [HttpPost("reviewproduct")]
     public async Task<IActionResult> ReviewProductAsync(ReviewProductRequest request)
     {
