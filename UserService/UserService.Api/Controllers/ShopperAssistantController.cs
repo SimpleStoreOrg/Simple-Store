@@ -22,7 +22,7 @@ public class ShopperAssistantController : ControllerBase
         _mediator = mediator;
     }
 
-    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<UserResponse>> GetAllShopperAssistantsAsync(
         [FromQuery] int? pageNumber,
@@ -34,7 +34,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "Admin")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetShopperAssistantByIdAsync(long id)
     {
@@ -42,7 +42,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateShopperAssistantAsync(CreateShopperAssistantRequest request)
     {
@@ -50,7 +50,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "ShopperAssistant,SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "ShopperAssistant,Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateShopperAssistantAsync(long id, UpdateShopperAssistantRequest request)
     {
@@ -58,7 +58,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteShopperAssistantAsync(long id)
     {

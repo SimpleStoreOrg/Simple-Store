@@ -43,7 +43,14 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdmin", policy =>
+    {
+        policy.RequireRole("Admin");
+        policy.RequireClaim("AdminPosition", "SuperAdmin");
+    });
+});
 
 builder.Services.AddSwaggerGen(options =>
 {

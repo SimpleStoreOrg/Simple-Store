@@ -49,6 +49,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
         }
 
         AdminPosition? adminPosition = null;
+        long? marketId = null;
         
         if (user.Role == RoleStatus.Admin)
         {
@@ -60,9 +61,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
             }
             
             adminPosition = admin.Position;
+            marketId = admin.MarketId;
         }
 
-        var accessToken = _jwtService.GenerateToken(user, adminPosition);
+        var accessToken = _jwtService.GenerateToken(user, adminPosition, marketId);
 
         var refreshToken = new RefreshTokenEntity
         {

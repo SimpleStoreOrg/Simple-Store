@@ -47,6 +47,7 @@ public class CreateAdminCommandHandler : IRequestHandler<CreateAdminCommand, Adm
         
         var admin = new AdminEntity
         {
+            MarketId = request.Request.MarketId,
             Name = request.Request.Name,
             Surname = request.Request.Surname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
@@ -65,6 +66,7 @@ public class CreateAdminCommandHandler : IRequestHandler<CreateAdminCommand, Adm
         return new AdminResponse
         {
             Id = admin.Id,
+            MarketId = admin.MarketId,
             Name = admin.Name,
             Surname = admin.Surname,
             Role = admin.Role,

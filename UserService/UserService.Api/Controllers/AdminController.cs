@@ -19,7 +19,7 @@ public class AdminController : ControllerBase
         _mediator = mediator;
     }
     
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Policy = "SuperAdmin")]
     [HttpGet]
     public async Task<ActionResult<UserResponse>> GetAllAdminsAsync(
         [FromQuery] int? pageNumber,
@@ -29,7 +29,15 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Policy = "SuperAdmin")]
+    [HttpGet("{id}")]
+    public async Task<ActionResult<UserResponse>> GetAdminByIdAsync(long id)
+    {
+        var result = await _mediator.Send(new GetAdminByIdQuery(id));
+        return Ok(result);
+    }
+    
+    [Authorize(Policy = "SuperAdmin")]
     [HttpPost("marketadmin")]
     public async Task<IActionResult> CreateMarketAdminAsync(CreateAdminRequest request)
     {
@@ -37,7 +45,7 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Policy = "SuperAdmin")]
     [HttpPost("superadmin")]
     public async Task<IActionResult> CreateSuperAdminAsync(CreateAdminRequest request)
     {
@@ -45,7 +53,7 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin,MarketAdmin")]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAdminAsync(long id, UpdateAdminRequest request)
     {
@@ -53,7 +61,7 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Policy = "SuperAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAdminAsync(long id)
     {

@@ -73,6 +73,7 @@ public class UpdateAdminCommandHandler : IRequestHandler<UpdateAdminCommand, Adm
         return new AdminResponse
         {
             Id = request.AdminId,
+            MarketId = admin.MarketId,
             Name = admin.Name,
             Surname = admin.Surname,
             Email = admin.Email,

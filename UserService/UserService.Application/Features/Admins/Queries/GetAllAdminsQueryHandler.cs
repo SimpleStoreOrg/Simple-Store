@@ -51,9 +51,11 @@ public class GetAllAdminsQueryHandler : IRequestHandler<GetAllAdminsQuery, Paged
         }
 
         var admins = await query
+            .OrderBy(a=>a.Id)
             .Select(e => new AdminResponse
             {
                 Id = e.Id,
+                MarketId = e.MarketId,
                 Name = e.Name,
                 Surname = e.Surname,
                 Role = e.Role,

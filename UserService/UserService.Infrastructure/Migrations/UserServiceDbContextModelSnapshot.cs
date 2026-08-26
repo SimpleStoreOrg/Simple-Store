@@ -106,6 +106,9 @@ namespace UserService.Infrastructure.Migrations
                 {
                     b.HasBaseType("UserService.Domain.Entities.UserEntity");
 
+                    b.Property<long>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Position")
                         .HasColumnType("integer");
 

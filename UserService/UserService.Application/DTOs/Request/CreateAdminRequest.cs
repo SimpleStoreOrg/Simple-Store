@@ -4,6 +4,7 @@ namespace UserService.Application.DTOs.Request;
 
 public class CreateAdminRequest
 {
+    public long MarketId { get; set; }
     public string? Name { get; set; }
     public string? Surname { get; set; }
     public string? Email { get; set; }

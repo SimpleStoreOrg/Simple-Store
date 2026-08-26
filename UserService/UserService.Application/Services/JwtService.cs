@@ -21,7 +21,9 @@ public class JwtService
         _audience = configuration["Jwt:Audience"];
     }
 
-    public string GenerateToken(UserEntity user, AdminPosition? adminPosition = null)
+    public string GenerateToken(UserEntity user,
+        AdminPosition? adminPosition = null,
+        long? marketId = null)
     {
         var claims = new List<Claim>
         {
@@ -33,7 +35,14 @@ public class JwtService
         if (adminPosition.HasValue)
         {
             claims.Add(
-                new Claim(ClaimTypes.Role, adminPosition.Value.ToString())
+                new Claim("AdminPosition", adminPosition.Value.ToString())
+            );
+        }
+        
+        if (marketId.HasValue)
+        {
+            claims.Add(
+                new Claim("MarketId", marketId.Value.ToString())
             );
         }
 
