@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -5,11 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ProductService.Api.Middlewares;
+using ProductService.Api.Services;
 using ProductService.Application;
 using ProductService.Application.Features.Categories.Validators;
 using ProductService.Application.Interfaces.Data;
+using ProductService.Application.Interfaces.External;
+using ProductService.Application.Interfaces.Services;
 using ProductService.Infrastructure;
 using ProductService.Infrastructure.Interceptors;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +44,9 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -51,15 +59,28 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            RoleClaimType = ClaimTypes.Role,
             ClockSkew = TimeSpan.Zero
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdmin", policy=>
+    {
+        policy.RequireRole("Admin");
+        policy.RequireClaim("AdminPosition", "SuperAdmin");
+    });
+});
 
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
+
+builder.Services.AddRefitClient<IMarketApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7004");
+});
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyMarker).Assembly));

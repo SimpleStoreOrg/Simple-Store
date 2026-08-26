@@ -57,6 +57,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         return new ProductResponse
         {
             Id = product.Id,
+            MarketId = product.MarketId,
             Name = product.Name,
             Price = product.Price,
             Stock = product.Stock,

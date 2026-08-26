@@ -76,6 +76,9 @@ namespace ProductService.Infrastructure.Migrations
                     b.Property<DateOnly?>("ExpiresAt")
                         .HasColumnType("date");
 
+                    b.Property<long>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");

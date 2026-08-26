@@ -10,7 +10,7 @@ using ProductService.Application.Features.Products.Queries;
 namespace ProductService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant,Customer")]
+[Authorize]
 public class ProductController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +20,7 @@ public class ProductController : ControllerBase
         _mediator = mediator;
     }
     
+    [Authorize(Roles = "Customer,Admin,ShopperAssistant")]
     [HttpGet]
     public async Task<ActionResult<PagedResponse<ProductResponse>>> GetAllProductsAsync(
         [FromQuery] int? pageNumber,
@@ -36,6 +37,7 @@ public class ProductController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Customer,Admin,ShopperAssistant")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductByIdAsync(int id)
     {
@@ -43,6 +45,7 @@ public class ProductController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateProductAsync(CreateProductRequest request)
     {
@@ -50,6 +53,7 @@ public class ProductController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProductAsync(int id, UpdateProductRequest request)
     {
@@ -57,6 +61,7 @@ public class ProductController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProductAsync(int id)
     {

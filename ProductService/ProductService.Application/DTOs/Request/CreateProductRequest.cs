@@ -2,6 +2,7 @@ namespace ProductService.Application.DTOs.Request;
 
 public class CreateProductRequest
 {
+    public long MarketId { get; set; }
     public string Name { get; set; }
     public decimal Price { get; set; }
     public decimal Stock { get; set; }
