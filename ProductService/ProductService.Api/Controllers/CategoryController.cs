@@ -10,7 +10,7 @@ using ProductService.Application.Features.Categories.Queries;
 namespace ProductService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant,Customer")]
+[Authorize]
 public class CategoryController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +20,7 @@ public class CategoryController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Roles = "Customer,Admin,ShopperAssistant")]
     [HttpGet]
     public async Task<ActionResult<PagedResponse<CategoryResponse>>> GetAllCategoriesAsync(
         [FromQuery] int? pageNumber,
@@ -35,6 +36,7 @@ public class CategoryController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Customer,Admin,ShopperAssistant")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCategoryByIdAsync(int id)
     {
@@ -42,6 +44,7 @@ public class CategoryController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Policy = "SuperAdmin")]
     [HttpPost]
     public async Task<IActionResult> CreateCategoryAsync(CreateCategoryRequest request)
     {
@@ -49,6 +52,7 @@ public class CategoryController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Policy = "SuperAdmin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCategoryAsync(int id, UpdateCategoryRequest request)
     {
@@ -56,6 +60,7 @@ public class CategoryController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Policy = "SuperAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCategoryAsync(int id)
     {

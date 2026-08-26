@@ -61,6 +61,7 @@ public class GetAllReviewsQueryHandler : IRequestHandler<GetAllReviewsQuery, Pag
         }
 
         var reviews = await query
+            .OrderBy(r=>r.Id)
             .Select(r => new ReviewProductResponse
             {
                 Id = r.Id,
@@ -71,6 +72,7 @@ public class GetAllReviewsQueryHandler : IRequestHandler<GetAllReviewsQuery, Pag
                 Message = r.Message,
                 CreatedAt = r.CreatedAt
             }).ToListAsync(cancellationToken);
+        
         return new PagedResponse<ReviewProductResponse>
         {
             Items = reviews,

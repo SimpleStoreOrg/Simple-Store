@@ -80,6 +80,7 @@ public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuer
         }
 
         var categories = await query
+            .OrderBy(c=>c.Id)
             .Select(c => new CategoryResponse
             {
                 Id = c.Id,

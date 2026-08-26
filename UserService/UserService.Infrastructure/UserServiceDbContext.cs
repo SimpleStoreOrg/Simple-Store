@@ -21,6 +21,7 @@ public class UserServiceDbContext : DbContext, IUserServiceDbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    public DbSet<AdminEntity> Admins { get; set; }
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<ShopperAssistantEntity> ShopperAssistants { get; set; }

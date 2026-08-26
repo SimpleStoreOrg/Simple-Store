@@ -5,6 +5,7 @@ namespace UserService.Application.Interfaces.Data;
 
 public interface IUserServiceDbContext
 {
+    public DbSet<AdminEntity> Admins { get; set; }
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<ShopperAssistantEntity> ShopperAssistants { get; set; }

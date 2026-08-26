@@ -51,6 +51,7 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
         }
 
         var customers = await query
+            .OrderBy(c=>c.Id)
             .Select(c => new CustomerResponse
             {
                 Id = c.Id,

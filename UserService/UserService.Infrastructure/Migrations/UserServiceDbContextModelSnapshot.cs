@@ -102,6 +102,25 @@ namespace UserService.Infrastructure.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("UserService.Domain.Entities.AdminEntity", b =>
+                {
+                    b.HasBaseType("UserService.Domain.Entities.UserEntity");
+
+                    b.Property<long>("MarketId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
+                    b.ToTable("Users", t =>
+                        {
+                            t.Property("Position")
+                                .HasColumnName("AdminEntity_Position");
+                        });
+
+                    b.HasDiscriminator().HasValue("AdminEntity");
+                });
+
             modelBuilder.Entity("UserService.Domain.Entities.CustomerEntity", b =>
                 {
                     b.HasBaseType("UserService.Domain.Entities.UserEntity");

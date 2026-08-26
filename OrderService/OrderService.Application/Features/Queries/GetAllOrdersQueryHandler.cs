@@ -82,6 +82,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
         }
 
         var orders = await query
+            .OrderBy(o=>o.Id)
             .Select(o => new OrderResponse
             {
                 Id = o.Id,

@@ -27,7 +27,7 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
     {
         _logger.LogInformation("Updating customer with ID: {CustomerId}", request.CustomerId);
 
-        var customer = await _dbContext.Users.OfType<CustomerEntity>()
+        var customer = await _dbContext.Customers
             .FirstOrDefaultAsync(x => x.Id == request.CustomerId, cancellationToken: cancellationToken);
         
         if (customer == null)
@@ -40,7 +40,7 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
         var email = request.Request.Email?.Trim().ToLower();
         var phoneNumber = request.Request.PhoneNumber?.Trim().ToLower();
 
-        var exists = await _dbContext.Users
+        var exists = await _dbContext.Customers
             .AnyAsync(c => c.Id != request.CustomerId && c.Role == RoleStatus.Customer &&
                            (c.UserName!.Trim().ToLower() == username || c.Email!.Trim().ToLower() == email ||
                             c.PhoneNumber!.Trim().ToLower() == phoneNumber),

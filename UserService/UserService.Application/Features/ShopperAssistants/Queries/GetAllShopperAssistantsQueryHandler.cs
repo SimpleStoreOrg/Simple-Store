@@ -58,6 +58,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
         }
 
         var shopperAssistants = await query
+            .OrderBy(sh=>sh.Id)
             .Select(e => new ShopperAssistantResponse
             {
                 Id = e.Id,

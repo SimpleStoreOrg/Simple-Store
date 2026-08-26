@@ -3,9 +3,9 @@ using UserService.Application.DTOs.Request;
 
 namespace UserService.Application.Features.Authentications.Validators;
 
-public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+public class RegisterCustomerRequestValidator : AbstractValidator<RegisterCustomerRequest>
 {
-    public RegisterRequestValidator()
+    public RegisterCustomerRequestValidator()
     {
         RuleFor(x=>x.Username)
             .NotEmpty().WithMessage("Username is required")
@@ -22,8 +22,5 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
             .Matches("[A-Z]").WithMessage("Password must contain at least 1 uppercase")
             .Matches("[a-z]").WithMessage("Password must contain at least 1 lowercase")
             .Matches("[0-9]").WithMessage("Password must contain at least 1 number");
-
-        RuleFor(x => x.Role)
-            .IsInEnum().WithMessage("Invalid role");
     }
 }

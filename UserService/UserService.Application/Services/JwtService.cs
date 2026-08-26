@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using UserService.Domain.Entities;
+using UserService.Domain.Enums;
 
 namespace UserService.Application.Services;
 
@@ -20,7 +21,9 @@ public class JwtService
         _audience = configuration["Jwt:Audience"];
     }
 
-    public string GenerateToken(UserEntity user)
+    public string GenerateToken(UserEntity user,
+        AdminPosition? adminPosition = null,
+        long? marketId = null)
     {
         var claims = new List<Claim>
         {
@@ -28,6 +31,20 @@ public class JwtService
             new Claim(ClaimTypes.Name, user.UserName!),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
+        
+        if (adminPosition.HasValue)
+        {
+            claims.Add(
+                new Claim("AdminPosition", adminPosition.Value.ToString())
+            );
+        }
+        
+        if (marketId.HasValue)
+        {
+            claims.Add(
+                new Claim("MarketId", marketId.Value.ToString())
+            );
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
         var creeds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -37,11 +38,19 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            RoleClaimType = ClaimTypes.Role,
             ClockSkew = TimeSpan.Zero
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdmin", policy =>
+    {
+        policy.RequireRole("Admin");
+        policy.RequireClaim("AdminPosition", "SuperAdmin");
+    });
+});
 
 builder.Services.AddSwaggerGen(options =>
 {

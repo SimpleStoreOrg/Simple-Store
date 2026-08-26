@@ -1,10 +1,12 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
+using ProductService.Application.Interfaces.External;
 using ProductService.Domain.Entities;
 
 namespace ProductService.Application.Features.Products.Commands;
@@ -15,11 +17,18 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<CreateProductCommandHandler> _logger;
+    private readonly IMarketApi _marketApi;
+    private readonly IHttpContextAccessor _accessor;
 
-    public CreateProductCommandHandler(IProductServiceDbContext dbContext, ILogger<CreateProductCommandHandler> logger)
+    public CreateProductCommandHandler(IProductServiceDbContext dbContext,
+        ILogger<CreateProductCommandHandler> logger,
+        IMarketApi marketApi,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _marketApi = marketApi;
+        _accessor = accessor;
     }
     public async Task<ProductResponse> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
@@ -32,10 +41,21 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
             _logger.LogWarning("Product already exists with name: {ProductName}", name);
             throw new ProductAlreadyExistsException();
         }
+
+        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+
+        var market = await _marketApi.GetMarketById(request.Request.MarketId, token);
+
+        if (market == null)
+        {
+            _logger.LogWarning("Market with ID {MarketId} not found", request.Request.MarketId);
+            throw new MarketNotFoundException(request.Request.MarketId);
+        }
         
         _logger.LogInformation("New Product creation");
         var product = new ProductEntity
         {
+            MarketId = market.Id,
             Name = request.Request.Name,
             Price = request.Request.Price,
             Stock = request.Request.Stock,
@@ -49,6 +69,7 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
         return new ProductResponse
         {
             Id = product.Id,
+            MarketId = product.MarketId,
             Name = product.Name,
             Price = product.Price,
             Stock = product.Stock,

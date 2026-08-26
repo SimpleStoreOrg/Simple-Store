@@ -5,6 +5,7 @@ using ProductService.Application.Common;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
+using ProductService.Application.Interfaces.Services;
 
 namespace ProductService.Application.Features.Products.Queries;
 
@@ -22,11 +23,15 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<GetAllProductsQueryHandler> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GetAllProductsQueryHandler(IProductServiceDbContext dbContext, ILogger<GetAllProductsQueryHandler> logger)
+    public GetAllProductsQueryHandler(IProductServiceDbContext dbContext,
+        ILogger<GetAllProductsQueryHandler> logger,
+        ICurrentUserService currentUserService)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
     public async Task<PagedResponse<ProductResponse>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
     {
@@ -44,6 +49,11 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
         }
         
         var query = _dbContext.Products.AsQueryable();
+
+        if (_currentUserService.AdminPosition == "MarketAdmin")
+        {
+            query = query.Where(p => p.MarketId == _currentUserService.MarketId);
+        }
 
         if (request.IsAvailable.HasValue)
         {
@@ -93,9 +103,11 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
         }
 
         var products = await query
+            .OrderBy(p=>p.Id)
             .Select(p => new ProductResponse
             {
                 Id = p.Id,
+                MarketId = p.MarketId,
                 Name = p.Name,
                 Price = p.Price,
                 Stock = p.Stock,

@@ -7,6 +7,7 @@ using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
 using UserService.Application.Services;
 using UserService.Domain.Entities;
+using UserService.Domain.Enums;
 
 namespace UserService.Application.Features.Authentications.Commands;
 
@@ -47,7 +48,23 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
             throw new InvalidPasswordException();
         }
 
-        var accessToken = _jwtService.GenerateToken(user);
+        AdminPosition? adminPosition = null;
+        long? marketId = null;
+        
+        if (user.Role == RoleStatus.Admin)
+        {
+            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Id == user.Id, cancellationToken);
+
+            if (admin == null)
+            {
+                throw new AdminNotFoundException(user.Id);
+            }
+            
+            adminPosition = admin.Position;
+            marketId = admin.MarketId;
+        }
+
+        var accessToken = _jwtService.GenerateToken(user, adminPosition, marketId);
 
         var refreshToken = new RefreshTokenEntity
         {

@@ -10,7 +10,7 @@ namespace UserService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ShopperAssistant,Customer")]
+[Authorize]
 public class CustomerController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +20,7 @@ public class CustomerController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet]
     public async Task<ActionResult<UserResponse>> GetAllCustomersAsync(
         [FromQuery] int? pageNumber,
@@ -29,6 +30,7 @@ public class CustomerController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCustomerByIdAsync(long id)
     {
@@ -36,22 +38,17 @@ public class CustomerController : ControllerBase
         return Ok(result);
     }
     
-    [HttpPost]
-    public async Task<IActionResult> CreateCustomerAsync(CreateCustomerRequest request)
-    {
-        var result = await _mediator.Send(new CreateCustomerCommand(request));
-        return Ok(result);
-    }
-    
+    [Authorize(Roles = "Customer,Admin")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUserAsync(long id, UpdateCustomerRequest request)
+    public async Task<IActionResult> UpdateCustomerAsync(long id, UpdateCustomerRequest request)
     {
         var result = await _mediator.Send(new UpdateCustomerCommand(id, request));
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUserAsync(long id)
+    public async Task<IActionResult> DeleteCustomerAsync(long id)
     {
         await _mediator.Send(new DeleteCustomerCommand(id));
         return NoContent();
