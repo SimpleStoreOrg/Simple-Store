@@ -17,6 +17,9 @@ public class OrderServiceDbContext : DbContext, IOrderServiceDbContext
 
         modelBuilder.Entity<OrderEntity>()
             .HasQueryFilter(x => x.DeletedAt == null);
+
+        modelBuilder.Entity<CartEntity>()
+            .HasQueryFilter(x => x.DeletedAt == null);
         
         base.OnModelCreating(modelBuilder);
     }
@@ -24,4 +27,6 @@ public class OrderServiceDbContext : DbContext, IOrderServiceDbContext
     public DbSet<OrderEntity> Orders { get; set; }
     public DbSet<OrderItemsEntity> OrderItems { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
+    public DbSet<CartEntity> Carts { get; set; }
+    public DbSet<CartItemsEntity> CartItems { get; set; }
 }
