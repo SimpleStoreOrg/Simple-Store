@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Common;
@@ -22,11 +24,16 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
 {
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<GetAllOrdersQueryHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public GetAllOrdersQueryHandler(IOrderServiceDbContext dbContext, ILogger<GetAllOrdersQueryHandler> logger)
+    public GetAllOrdersQueryHandler(
+        IOrderServiceDbContext dbContext,
+        ILogger<GetAllOrdersQueryHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
     
     public async Task<PagedResponse<OrderResponse>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
@@ -44,7 +51,25 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
         
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+        
         var query = _dbContext.Orders.AsQueryable();
+        
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        {
+            var marketIdClaim = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdClaim == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdClaim);
+
+            query = query.Where(o => o.OrderItems.Any(oi => oi.MarketId == marketId));
+        }
 
         if (request.CustomerIds != null && request.CustomerIds.Length > 0) 
         {
@@ -94,6 +119,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
                 DeletedAt = o.DeletedAt,
                 Items = o.OrderItems.Select(oi => new OrderItemResponse
                 {
+                    MarketId = oi.MarketId,
                     ProductId = oi.ProductId,
                     Price = oi.Price,
                     Quantity = oi.Quantity,

@@ -4,6 +4,7 @@ public class OrderItemsEntity
 {
     public long Id { get; set; }
     public long OrderId { get; set; }
+    public long MarketId { get; set; }
     public long ProductId { get; set; }
     public decimal Quantity { get; set; }
     public decimal Price { get; set; }

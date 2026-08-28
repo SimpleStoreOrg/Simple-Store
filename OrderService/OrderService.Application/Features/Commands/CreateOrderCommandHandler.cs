@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using OrderService.Application.DTOs.External;
 using OrderService.Application.DTOs.Request;
 using OrderService.Application.DTOs.Response;
 using OrderService.Application.Exceptions;
@@ -19,24 +21,31 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
     private readonly IProductApi _productApi;
-    private readonly ICustomerApi _customerApi;
     private readonly IHttpContextAccessor _accessor;
 
     public CreateOrderCommandHandler(
         IOrderServiceDbContext dbContext,
         ILogger<CreateOrderCommandHandler> logger,
         IProductApi productApi,
-        ICustomerApi customerApi, IHttpContextAccessor accessor)
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
         _productApi = productApi;
-        _customerApi = customerApi;
         _accessor = accessor;
     }
     
     public async Task<OrderResponse> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
+        var customerIdStr = _accessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (customerIdStr == null)
+        {
+            _logger.LogWarning("No Customer Authorized. {CustomerIdStr}", customerIdStr);
+            throw new NotAuthorizedException("Customer is not authorized");
+        }
+        
+        long customerId = long.Parse(customerIdStr);
+        
         if (request.Request.Items == null || request.Request.Items.Count <= 0)
         {
             throw new InvalidOrderException("Order must contain at least one item");
@@ -48,20 +57,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
 
         var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
         
-        var customer = await _customerApi.GetCustomerById(request.Request.CustomerId, token);
-        
-        if (customer == null)
-        {
-            _logger.LogWarning("Customer with ID {CustomerId} not found", request.Request.CustomerId);
-            throw new CustomerNotFoundException(request.Request.CustomerId);
-        }
-
         try
         {
-            _logger.LogInformation("Creating order using Customer ID: {CustomerId}", request.Request.CustomerId);
+            _logger.LogInformation("Creating order using Customer ID: {CustomerId}", customerId);
             var order = new OrderEntity
             {
-                CustomerId = customer.Id,
+                CustomerId = customerId,
                 Status = OrderStatus.New,
                 PickUpDeadline = DateTime.UtcNow.AddHours(5).AddMinutes(30),
                 OrderItems = new List<OrderItemsEntity>()
@@ -88,15 +89,26 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                 {
                     OrderId = order.Id,
                     ProductId = item.ProductId,
+                    MarketId = product.MarketId,
                     Quantity = item.Quantity,
                     Price = product.Price
                 };
                 order.OrderItems.Add(orderItems);
+                
                 _logger.LogInformation("Adding product {ProductId} with quantity {Quantity} to order",
                     orderItems.ProductId, orderItems.Quantity);
             }
+            
             _logger.LogInformation("Order contains {ItemCount} items", order.OrderItems.Count);
-
+            
+            foreach (var item in request.Request.Items)
+            {
+                await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest
+                    {
+                        Quantity = item.Quantity
+                    }, token);
+            }
+            
             await _dbContext.Orders.AddAsync(order, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
             
@@ -108,8 +120,9 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                 CustomerId = order.CustomerId,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
-                Items = order.OrderItems.Select(oi => new OrderItemResponse()
+                Items = order.OrderItems.Select(oi => new OrderItemResponse
                 {
+                    MarketId = oi.MarketId,
                     ProductId = oi.ProductId,
                     Price = oi.Price,
                     Quantity = oi.Quantity,
