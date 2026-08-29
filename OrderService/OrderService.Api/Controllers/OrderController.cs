@@ -61,6 +61,22 @@ public class OrderController : ControllerBase
         return Ok();
     }
     
+    [Authorize(Roles = "Customer")]
+    [HttpPost("{id}/cancelbycustomer")]
+    public async Task<IActionResult> CancelByCustomerAsync(long id)
+    {
+        await _mediator.Send(new CancelOrderCommand(id));
+        return NoContent();
+    }
+    
+    [Authorize(Roles = "Admin,ShopperAssistant")]
+    [HttpPost("{id}/cancelbymarket")]
+    public async Task<IActionResult> CancelByMarketAsync(long id)
+    {
+        await _mediator.Send(new CancelOrderByMarketCommand(id));
+        return NoContent();
+    }
+    
     [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpPost("{id}/pay")]
     public async Task<IActionResult> PayAsync(int id, PayOrderRequest request)
