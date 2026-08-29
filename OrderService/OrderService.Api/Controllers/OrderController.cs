@@ -44,14 +44,6 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(new GetOrderByIdQuery(id));
         return Ok(result);
     }
-    
-    [Authorize(Roles = "Customer,Admin")]
-    [HttpPost]
-    public async Task<IActionResult> CreateOrderAsync(CreateOrderRequest request)
-    {
-        var result = await _mediator.Send(new CreateOrderCommand(request));
-        return Ok(result);
-    }
 
     [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpPost("{id}/assign-assistant")]
@@ -83,5 +75,13 @@ public class OrderController : ControllerBase
     {
         await _mediator.Send(new ReviewProductCommand(request));
         return NoContent();
+    }
+    
+    [Authorize(Roles = "Admin,ShopperAssistant")]
+    [HttpGet("internal/customerids")]
+    public async Task<IActionResult> GetMarketCustomerIdsAsync()
+    {
+        var result = await _mediator.Send(new GetMarketCustomerIdsQuery());
+        return Ok(result);
     }
 }

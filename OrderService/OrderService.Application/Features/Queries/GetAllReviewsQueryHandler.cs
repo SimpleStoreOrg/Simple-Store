@@ -50,7 +50,7 @@ public class GetAllReviewsQueryHandler : IRequestHandler<GetAllReviewsQuery, Pag
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
         
-        var query = _dbContext.Reviews.AsQueryable();
+        var query = _dbContext.Reviews.AsNoTracking().AsQueryable();
         
         if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {

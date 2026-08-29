@@ -34,9 +34,9 @@ public class GetTotalRevenueQueryHandler : IRequestHandler<GetTotalRevenueQuery,
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
         
-        var query = _dbContext.Orders.AsQueryable();
+        var query = _dbContext.Orders.AsNoTracking().AsQueryable();
         
-        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        if (role == "Admin" && adminPosition == "MarketAdmin")
         {
             var marketIdClaim = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
 

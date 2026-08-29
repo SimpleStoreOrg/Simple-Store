@@ -47,8 +47,8 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
         
         if (order == null)
         {
-            _logger.LogWarning("Order with ID {OrderId} not found", order.Id);
-            throw new OrderNotFoundException(order.Id);
+            _logger.LogWarning("Order with ID {OrderId} not found", request.Request.OrderId);
+            throw new OrderNotFoundException(request.Request.OrderId);
         }
 
         var orderItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == request.Request.ProductId);

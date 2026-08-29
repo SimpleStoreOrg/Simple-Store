@@ -55,7 +55,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
         
-        var query = _dbContext.Orders.AsQueryable();
+        var query = _dbContext.Orders.AsNoTracking().AsQueryable();
         
         if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {

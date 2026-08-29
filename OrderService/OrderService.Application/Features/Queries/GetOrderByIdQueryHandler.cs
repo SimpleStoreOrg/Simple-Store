@@ -32,8 +32,9 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
         var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
-        
-        var query = _dbContext.Orders.Include(o => o.OrderItems)
+
+        var query = _dbContext.Orders.AsNoTracking()
+            .Include(o => o.OrderItems)
             .Where(o => o.Id == request.OrderId);
         
         if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")

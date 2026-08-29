@@ -19,6 +19,7 @@ public class CartController : ControllerBase
         _mediator = mediator;
     }
     
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet]
     public async Task<IActionResult> GetAllCartsAsync([FromQuery]int? pageNumber, [FromQuery]int? pageSize)
     {
@@ -26,6 +27,7 @@ public class CartController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Customer,Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateCartAsync(CreateCartRequest request)
     {
@@ -33,6 +35,7 @@ public class CartController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Customer,Admin")]
     [HttpPost("checkout")]
     public async Task<IActionResult> CheckoutAsync()
     {
