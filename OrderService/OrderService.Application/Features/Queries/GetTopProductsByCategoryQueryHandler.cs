@@ -1,12 +1,13 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Common;
 using OrderService.Application.DTOs.External;
+using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Application.Interfaces.External;
-using ProductService.Application.Exceptions;
 using IncorrectPaginationException = OrderService.Application.Exceptions.IncorrectPaginationException;
 
 namespace OrderService.Application.Features.Queries;
@@ -55,14 +56,35 @@ public class
         }
         
         var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+        
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
 
-        var sales = await _dbContext.OrderItems
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+
+        var salesQuery = _dbContext.OrderItems.AsQueryable();
+
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        {
+            var marketIdClaim = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdClaim == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdClaim);
+
+            salesQuery = salesQuery.Where(oi => oi.MarketId == marketId);
+        }
+        
+        var sales = await salesQuery
             .GroupBy(oi => oi.ProductId)
-            .Select(o => new TopProductsResponse 
-            { 
-                ProductId = o.Key, 
-                SoldQuantity = o.Sum(x => x.Quantity) 
-            }).OrderByDescending(x => x.SoldQuantity)
+            .Select(o => new TopProductsResponse
+            {
+                ProductId = o.Key,
+                SoldQuantity = o.Sum(x => x.Quantity)
+            })
+            .OrderByDescending(x => x.SoldQuantity)
             .ToListAsync(cancellationToken);
 
         var categories = new List<TopProductsByCategoryResponse>();

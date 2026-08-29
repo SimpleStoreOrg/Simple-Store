@@ -22,6 +22,67 @@ namespace OrderService.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("OrderService.Domain.Entities.CartEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("PickUpDeadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("OrderService.Domain.Entities.CartItemsEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("CartEntityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("MarketId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartEntityId");
+
+                    b.ToTable("CartItems");
+                });
+
             modelBuilder.Entity("OrderService.Domain.Entities.OrderEntity", b =>
                 {
                     b.Property<long>("Id")
@@ -64,6 +125,9 @@ namespace OrderService.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<long>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("OrderEntityId")
                         .HasColumnType("bigint");
 
@@ -100,6 +164,9 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<long>("CustomerId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Message")
                         .HasColumnType("text");
 
@@ -117,11 +184,23 @@ namespace OrderService.Infrastructure.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("OrderService.Domain.Entities.CartItemsEntity", b =>
+                {
+                    b.HasOne("OrderService.Domain.Entities.CartEntity", null)
+                        .WithMany("CartItems")
+                        .HasForeignKey("CartEntityId");
+                });
+
             modelBuilder.Entity("OrderService.Domain.Entities.OrderItemsEntity", b =>
                 {
                     b.HasOne("OrderService.Domain.Entities.OrderEntity", null)
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderEntityId");
+                });
+
+            modelBuilder.Entity("OrderService.Domain.Entities.CartEntity", b =>
+                {
+                    b.Navigation("CartItems");
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderEntity", b =>
