@@ -1,10 +1,13 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
+using UserService.Application.Interfaces.External;
 
 namespace UserService.Application.Features.Customers.Queries;
 
@@ -16,12 +19,20 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetAllCustomersQueryHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
+    private readonly IOrderApi _orderApi;
 
-    public GetAllCustomersQueryHandler(IUserServiceDbContext dbContext, ILogger<GetAllCustomersQueryHandler> logger)
+    public GetAllCustomersQueryHandler(
+        IUserServiceDbContext dbContext,
+        ILogger<GetAllCustomersQueryHandler> logger,
+        IHttpContextAccessor accessor,
+        IOrderApi orderApi)
     {
         _dbContext = dbContext;
         _logger = logger;
-    }
+        _accessor = accessor;
+        _orderApi = orderApi;
+    } 
     
     public async Task<PagedResponse<CustomerResponse>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
     {
@@ -37,8 +48,20 @@ public class GetAllCustomersQueryHandler : IRequestHandler<GetAllCustomersQuery,
             _logger.LogWarning("Page size {PageSize}, must be greater than 0", request.PageSize);
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
+
+        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
         
-        var query = _dbContext.Customers.AsQueryable();
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+        
+        var query = _dbContext.Customers.AsNoTracking().AsQueryable();
+        
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        {
+            var customerIds = await _orderApi.GetMarketCustomerIds(token);
+            query = query.Where(c => customerIds.Contains(c.Id));
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
         

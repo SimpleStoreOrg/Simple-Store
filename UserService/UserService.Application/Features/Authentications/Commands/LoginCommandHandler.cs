@@ -63,6 +63,17 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
             adminPosition = admin.Position;
             marketId = admin.MarketId;
         }
+        else if (user.Role == RoleStatus.ShopperAssistant)
+        {
+            var shopperAssistant =
+                await _context.ShopperAssistants.FirstOrDefaultAsync(s => s.Id == user.Id, cancellationToken);
+            if (shopperAssistant == null)
+            {
+                throw new NotAuthorizedException("ShopperAssistant not found");
+            }
+
+            marketId = shopperAssistant.MarketId;
+        }
 
         var accessToken = _jwtService.GenerateToken(user, adminPosition, marketId);
 

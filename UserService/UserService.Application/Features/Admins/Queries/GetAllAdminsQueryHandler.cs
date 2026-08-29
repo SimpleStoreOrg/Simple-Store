@@ -38,7 +38,7 @@ public class GetAllAdminsQueryHandler : IRequestHandler<GetAllAdminsQuery, Paged
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
 
-        var query = _dbContext.Admins.AsQueryable();
+        var query = _dbContext.Admins.AsNoTracking().AsQueryable();
 
         var totalCount = await query.CountAsync(cancellationToken);
         

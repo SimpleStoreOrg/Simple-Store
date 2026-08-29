@@ -5,6 +5,7 @@ namespace UserService.Application.DTOs.Response;
 public class ShopperAssistantResponse
 {
     public long Id { get; set; }
+    public long? MarketId { get; set; }
     public string? Name { get; set; }
     public string? Surname { get; set; }
     public string? Email { get; set; }

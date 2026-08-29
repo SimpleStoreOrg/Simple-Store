@@ -5,10 +5,12 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Refit;
 using UserService.Api.Middlewares;
 using UserService.Application;
 using UserService.Application.Features.ShopperAssistants.Validators;
 using UserService.Application.Interfaces.Data;
+using UserService.Application.Interfaces.External;
 using UserService.Application.Services;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Interceptors;
@@ -25,6 +27,13 @@ builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddRefitClient<IOrderApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7001");
+});
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>

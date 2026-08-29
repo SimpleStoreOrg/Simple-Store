@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UserService.Application.DTOs.Response;
@@ -13,17 +15,41 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetShopperAssistantByIdQueryHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public GetShopperAssistantByIdQueryHandler(IUserServiceDbContext dbContext, ILogger<GetShopperAssistantByIdQueryHandler> logger)
+    public GetShopperAssistantByIdQueryHandler(
+        IUserServiceDbContext dbContext,
+        ILogger<GetShopperAssistantByIdQueryHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
     public async Task<ShopperAssistantResponse> Handle(GetShopperAssistantByIdQuery request, CancellationToken cancellationToken)
     {
-        var shopperAssistant =
-            await _dbContext.ShopperAssistants.FirstOrDefaultAsync(e => e.Id == request.ShopperAssistantId,
-                cancellationToken);
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+
+        var query = _dbContext.ShopperAssistants.AsNoTracking()
+            .Where(s => s.Id == request.ShopperAssistantId);
+        
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        {
+            var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdStr == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdStr);
+
+            query = query.Where(o => o.MarketId == marketId);
+        }
+
+        var shopperAssistant = await query.FirstOrDefaultAsync(cancellationToken);
 
         if (shopperAssistant == null)
         {
@@ -34,6 +60,7 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
         return new ShopperAssistantResponse
         {
             Id = shopperAssistant.Id,
+            MarketId = shopperAssistant.MarketId,
             Name = shopperAssistant.Name,
             Surname = shopperAssistant.Surname,
             Role = shopperAssistant.Role,

@@ -22,7 +22,7 @@ public class ShopperAssistantController : ControllerBase
         _mediator = mediator;
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet]
     public async Task<ActionResult<UserResponse>> GetAllShopperAssistantsAsync(
         [FromQuery] int? pageNumber,
@@ -34,7 +34,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetShopperAssistantByIdAsync(long id)
     {
