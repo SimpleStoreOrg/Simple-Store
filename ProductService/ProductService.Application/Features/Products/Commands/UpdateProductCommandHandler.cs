@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.DTOs.Request;
@@ -14,11 +15,16 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<UpdateProductCommandHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public UpdateProductCommandHandler(IProductServiceDbContext dbContext, ILogger<UpdateProductCommandHandler> logger)
+    public UpdateProductCommandHandler(
+        IProductServiceDbContext dbContext,
+        ILogger<UpdateProductCommandHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
     public async Task<ProductResponse> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
@@ -26,10 +32,19 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         
         var name = request.Request.Name.Trim().ToLower();
 
+        var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+        
+        if (marketIdStr == null)
+        {
+            throw new NotAuthorizedException("Market ID not found/authorized");
+        }
+
+        long marketId = long.Parse(marketIdStr);
+        
         var exists = await _dbContext.Products
             .AnyAsync(p =>
                 p.Id != request.ProductId &&
-                p.Name.ToLower() == name, cancellationToken);
+                p.Name.ToLower() == name && p.MarketId == marketId, cancellationToken);
 
         if (exists)
         {

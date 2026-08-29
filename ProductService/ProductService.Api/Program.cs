@@ -6,12 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ProductService.Api.Middlewares;
-using ProductService.Api.Services;
 using ProductService.Application;
 using ProductService.Application.Features.Categories.Validators;
 using ProductService.Application.Interfaces.Data;
 using ProductService.Application.Interfaces.External;
-using ProductService.Application.Interfaces.Services;
 using ProductService.Infrastructure;
 using ProductService.Infrastructure.Interceptors;
 using Refit;
@@ -45,7 +43,6 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>

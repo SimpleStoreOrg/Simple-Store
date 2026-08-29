@@ -32,9 +32,20 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
     }
     public async Task<ProductResponse> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
-        var name = request.Request.Name.Trim().ToLower();
+        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+     
+        var market = await _marketApi.GetMarketById(request.Request.MarketId, token);
+     
+        if (market == null)
+        {
+            _logger.LogWarning("Market with ID {MarketId} not found", request.Request.MarketId);
+            throw new MarketNotFoundException(request.Request.MarketId);
+        }
         
-        var exists = await _dbContext.Products.AnyAsync(p => p.Name.Trim().ToLower() == name, cancellationToken);
+        var name = request.Request.Name.Trim().ToLower();
+
+        var exists = await _dbContext.Products.AnyAsync(
+            p => p.Name.Trim().ToLower() == name && p.MarketId == market.Id, cancellationToken);
 
         if (exists)
         {
@@ -42,15 +53,7 @@ public class CreateProductCommandHandler: IRequestHandler<CreateProductCommand, 
             throw new ProductAlreadyExistsException();
         }
 
-        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
-
-        var market = await _marketApi.GetMarketById(request.Request.MarketId, token);
-
-        if (market == null)
-        {
-            _logger.LogWarning("Market with ID {MarketId} not found", request.Request.MarketId);
-            throw new MarketNotFoundException(request.Request.MarketId);
-        }
+        
         
         _logger.LogInformation("New Product creation");
         var product = new ProductEntity

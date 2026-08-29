@@ -1,11 +1,12 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
-using ProductService.Application.Interfaces.Services;
 
 namespace ProductService.Application.Features.Products.Queries;
 
@@ -23,15 +24,15 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<GetAllProductsQueryHandler> _logger;
-    private readonly ICurrentUserService _currentUserService;
+    private readonly IHttpContextAccessor _accessor;
 
     public GetAllProductsQueryHandler(IProductServiceDbContext dbContext,
         ILogger<GetAllProductsQueryHandler> logger,
-        ICurrentUserService currentUserService)
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _currentUserService = currentUserService;
+        _accessor = accessor;
     }
     public async Task<PagedResponse<ProductResponse>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
     {
@@ -48,11 +49,24 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
         
-        var query = _dbContext.Products.AsQueryable();
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
 
-        if (_currentUserService.AdminPosition == "MarketAdmin")
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+        
+        var query = _dbContext.Products.AsNoTracking().AsQueryable();
+
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {
-            query = query.Where(p => p.MarketId == _currentUserService.MarketId);
+            var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdStr == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdStr);
+            
+            query = query.Where(p => p.MarketId == marketId);
         }
 
         if (request.IsAvailable.HasValue)

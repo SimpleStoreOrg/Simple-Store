@@ -46,7 +46,7 @@ public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuer
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
         
-        var query = _dbContext.Categories.AsQueryable();
+        var query = _dbContext.Categories.AsNoTracking().AsQueryable();
         
         if (!string.IsNullOrWhiteSpace(request.CategoryName))
         {

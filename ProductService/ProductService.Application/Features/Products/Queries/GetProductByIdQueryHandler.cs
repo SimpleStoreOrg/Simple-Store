@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.DTOs.Response;
@@ -13,15 +15,40 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<GetProductByIdQueryHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public GetProductByIdQueryHandler(IProductServiceDbContext dbContext, ILogger<GetProductByIdQueryHandler> logger)
+    public GetProductByIdQueryHandler(
+        IProductServiceDbContext dbContext,
+        ILogger<GetProductByIdQueryHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
     public async Task<ProductResponse> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        var product = await _dbContext.Products.FirstOrDefaultAsync(p=>p.Id == request.ProductId, cancellationToken);
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+
+        var query = _dbContext.Products.AsNoTracking().Where(p => p.Id == request.ProductId);
+        
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        {
+            var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdStr == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdStr);
+
+            query = query.Where(p => p.MarketId == marketId);
+        }
+
+        var product = await query.FirstOrDefaultAsync(cancellationToken);
         
         if (product == null)
         {
