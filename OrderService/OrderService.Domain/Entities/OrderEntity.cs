@@ -9,4 +9,5 @@ public class OrderEntity : BaseEntity<long>
     public DateTime PickUpDeadline { get; set; }
     public OrderStatus Status { get; set; }
     public List<OrderItemsEntity> OrderItems { get; set; }
+    public decimal TotalPrice { get; set; }
 }

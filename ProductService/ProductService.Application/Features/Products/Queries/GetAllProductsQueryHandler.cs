@@ -17,8 +17,10 @@ public record GetAllProductsQuery(
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
     long[]? CategoryIds = null,
+    long[]? ProductIds = null,
     DateTime? CreatedAtFrom = null,
-    DateTime? CreatedAtTo = null) : IRequest<PagedResponse<ProductResponse>>;
+    DateTime? CreatedAtTo = null, 
+    long? MarketId = null) : IRequest<PagedResponse<ProductResponse>>;
 
 public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, PagedResponse<ProductResponse>>
 {
@@ -68,6 +70,10 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
             
             query = query.Where(p => p.MarketId == marketId);
         }
+        else if (request.MarketId.HasValue)
+        {
+            query = query.Where(p => p.MarketId == request.MarketId.Value);
+        }
 
         if (request.IsAvailable.HasValue)
         {
@@ -104,6 +110,11 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
         if (request.CategoryIds != null && request.CategoryIds.Length > 0)
         {
             query = query.Where(p => request.CategoryIds.Contains(p.CategoryId));
+        }
+        
+        if (request.ProductIds != null && request.ProductIds.Length > 0)
+        {
+            query = query.Where(p => request.ProductIds.Contains(p.Id));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

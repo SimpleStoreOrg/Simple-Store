@@ -28,19 +28,21 @@ public class RegisterCustomerCommandHandler : IRequestHandler<RegisterCustomerCo
         _logger.LogInformation("Registering Customer: {Username}", request.Request.Username);
 
         var exists = await _context.Customers.AnyAsync(
-            u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower(),
+            u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower() ||
+                 u.Email!.Trim().ToLower() == request.Request.Email!.Trim().ToLower(),
             cancellationToken: cancellationToken);
 
         if (exists)
         {
-            _logger.LogInformation("Customer already exists with this Username: {Username}", request.Request.Username);
+            _logger.LogInformation("Customer already exists with this Username or Email: {Username}, {Email}",
+                request.Request.Username, request.Request.Email);
             throw new UserAlreadyExistsException();
         }
                 
         var customer = new CustomerEntity
         {
-            UserName = request.Request.Username,
-            Email = request.Request.Email,
+            UserName = request.Request.Username!.Trim().ToLower(),
+            Email = request.Request.Email!.Trim().ToLower(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Role = RoleStatus.Customer
         };

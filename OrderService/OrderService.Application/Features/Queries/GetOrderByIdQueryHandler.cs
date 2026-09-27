@@ -74,8 +74,9 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
                 ProductId = oi.ProductId,
                 Price = oi.Price,
                 Quantity = oi.Quantity,
-                TotalPrice = oi.Quantity * oi.Price
+                TotalItemPrice = oi.Quantity * oi.Price
             }).ToList(),
+            TotalPrice = order.TotalPrice,
             PickUpDeadline = order.PickUpDeadline
         };
     }

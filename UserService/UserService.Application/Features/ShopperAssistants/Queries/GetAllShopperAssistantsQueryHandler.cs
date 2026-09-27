@@ -53,7 +53,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
 
         var query = _dbContext.ShopperAssistants.AsNoTracking().AsQueryable();
         
-        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        if (role == "Admin" && adminPosition == "MarketAdmin")
         {
             var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
 
@@ -69,7 +69,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
 
         if (request.Positions.HasValue)
         {
-            query = query.Where(s => s.Position == request.Positions);
+            query = query.Where(s => s.Position == request.Positions.Value);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

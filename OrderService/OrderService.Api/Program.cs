@@ -16,6 +16,17 @@ using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
@@ -25,7 +36,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddFluentValidationAutoValidation();
 
-builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AssignOrderRequestValidator>();
 
 builder.Services.AddRefitClient<ICustomerApi>().ConfigureHttpClient(c =>
 {
@@ -97,6 +108,8 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddScoped<IOrderServiceDbContext>(provider => provider.GetRequiredService<OrderServiceDbContext>());
 
 var app = builder.Build();
+
+app.UseCors("Frontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

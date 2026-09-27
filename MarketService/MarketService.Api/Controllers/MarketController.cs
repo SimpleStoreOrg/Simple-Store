@@ -18,7 +18,7 @@ public class MarketController : ControllerBase
         _mediator = mediator;
     }
 
-    [Authorize(Policy = "CustomerOrSuperAdmin")]
+    [Authorize(Policy = "CustomerOrAdmin")]
     [HttpGet]
     public async Task<IActionResult> GetAllMarketsAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize,
         [FromQuery] string? marketName)
@@ -27,7 +27,7 @@ public class MarketController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Policy = "CustomerOrSuperAdmin")]
+    [Authorize(Policy = "CustomerOrAdmin")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetMarketByIdAsync(long id)
     {

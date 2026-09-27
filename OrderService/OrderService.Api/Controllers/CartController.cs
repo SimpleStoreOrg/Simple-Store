@@ -27,19 +27,43 @@ public class CartController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "Customer,Admin")]
-    [HttpPost]
-    public async Task<IActionResult> CreateCartAsync(CreateCartRequest request)
+    [Authorize(Roles = "Customer")]
+    [HttpPut("items/{productId}")]
+    public async Task<IActionResult> UpdateCartItemAsync(long productId, UpdateCartItemRequest request)
     {
-        var result = await _mediator.Send(new CreateCartCommand(request));
+        var result = await _mediator.Send(new UpdateCartItemCommand(productId, request));
+        return Ok(result);
+    }
+
+    [Authorize(Roles = "Customer")]
+    [HttpGet("my-cart")]
+    public async Task<IActionResult> GetMyCartAsync()
+    {
+        var result = await _mediator.Send(new GetMyCartQuery());
+        return Ok(result);
+    }
+
+    [Authorize(Roles = "Customer")]
+    [HttpPost]
+    public async Task<IActionResult> CreateCartAsync()
+    {
+        var result = await _mediator.Send(new CreateCartCommand());
         return Ok(result);
     }
     
-    [Authorize(Roles = "Customer,Admin")]
-    [HttpPost("checkout")]
-    public async Task<IActionResult> CheckoutAsync()
+    [Authorize(Roles = "Customer")]
+    [HttpPost("additemtocart")]
+    public async Task<IActionResult> AddItemToCartAsync(CreateCartRequest request)
     {
-        var result = await _mediator.Send(new CheckoutCartCommand());
+        var result = await _mediator.Send(new AddItemToCartCommand(request));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Customer")]
+    [HttpDelete("items/{productId}")]
+    public async Task<IActionResult> RemoveCartItemAsync(long productId)
+    {
+        var result = await _mediator.Send(new RemoveCartItemCommand(productId));
         return Ok(result);
     }
 }

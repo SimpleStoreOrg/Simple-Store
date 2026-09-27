@@ -29,11 +29,23 @@ public class ProductController : ControllerBase
         [FromQuery] decimal? minPrice,
         [FromQuery] decimal? maxPrice,
         [FromQuery] long[]? categoryIds,
+        [FromQuery] long[]? productIds,
         [FromQuery] DateTime? createdAtFrom,
-        [FromQuery] DateTime? createdAtTo)
+        [FromQuery] DateTime? createdAtTo,
+        [FromQuery] long? marketId)
     {
-        var result = await _mediator.Send(new GetAllProductsQuery(pageNumber, pageSize,
-            isAvailable, minPrice, maxPrice, categoryIds, createdAtFrom, createdAtTo));
+        var result = await _mediator
+            .Send(new GetAllProductsQuery(
+            pageNumber,
+            pageSize,
+            isAvailable,
+            minPrice, maxPrice,
+            categoryIds,
+            productIds,
+            createdAtFrom,
+            createdAtTo,
+            marketId));
+        
         return Ok(result);
     }
 

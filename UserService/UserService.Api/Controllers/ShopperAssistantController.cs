@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
+using UserService.Application.Exceptions;
 using UserService.Application.Features.ShopperAssistants.Commands;
 using UserService.Application.Features.ShopperAssistants.Queries;
 using UserService.Domain.Enums;
@@ -22,15 +24,31 @@ public class ShopperAssistantController : ControllerBase
         _mediator = mediator;
     }
 
-    [Authorize(Roles = "Admin,ShopperAssistant")]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
-    public async Task<ActionResult<UserResponse>> GetAllShopperAssistantsAsync(
+    public async Task<ActionResult<ShopperAssistantResponse>> GetAllShopperAssistantsAsync(
         [FromQuery] int? pageNumber,
         [FromQuery] int? pageSize,
         [FromQuery] ShopperAssistantPosition? positions)
     {
         var result = await _mediator.Send(new GetAllShopperAssistantsQuery(
             pageNumber, pageSize, positions));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin,ShopperAssistant")]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentShopperAssistantAsync()
+    {
+        var shopperAssistantStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (shopperAssistantStr == null)
+        {
+            throw new NotAuthorizedException("ShopperAssistant is not Authorized");
+        }
+
+        long shopperAssistantId = long.Parse(shopperAssistantStr);
+
+        var result = await _mediator.Send(new GetShopperAssistantByIdQuery(shopperAssistantId));
         return Ok(result);
     }
     
@@ -50,7 +68,7 @@ public class ShopperAssistantController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize(Roles = "ShopperAssistant,Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateShopperAssistantAsync(long id, UpdateShopperAssistantRequest request)
     {

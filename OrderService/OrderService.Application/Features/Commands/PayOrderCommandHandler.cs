@@ -1,12 +1,9 @@
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using OrderService.Application.DTOs.External;
 using OrderService.Application.DTOs.Response;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
-using OrderService.Application.Interfaces.External;
 using OrderService.Domain.Enums;
 
 namespace OrderService.Application.Features.Commands;

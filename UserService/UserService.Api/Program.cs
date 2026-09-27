@@ -17,6 +17,17 @@ using UserService.Infrastructure.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
@@ -101,6 +112,8 @@ builder.Services.AddScoped<IUserServiceDbContext>(provider =>
     provider.GetRequiredService<UserServiceDbContext>());
 
 var app = builder.Build();
+
+app.UseCors("ReactFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

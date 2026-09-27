@@ -123,8 +123,9 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
                     ProductId = oi.ProductId,
                     Price = oi.Price,
                     Quantity = oi.Quantity,
-                    TotalPrice = oi.Quantity * oi.Price
+                    TotalItemPrice = oi.Quantity * oi.Price
                 }).ToList(),
+                TotalPrice = o.TotalPrice,
                 PickUpDeadline = o.PickUpDeadline
             }).ToListAsync(cancellationToken);
         

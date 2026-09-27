@@ -9,12 +9,21 @@ using ProductService.Api.Middlewares;
 using ProductService.Application;
 using ProductService.Application.Features.Categories.Validators;
 using ProductService.Application.Interfaces.Data;
-using ProductService.Application.Interfaces.External;
 using ProductService.Infrastructure;
 using ProductService.Infrastructure.Interceptors;
-using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -74,11 +83,6 @@ builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
 
-builder.Services.AddRefitClient<IMarketApi>().ConfigureHttpClient(c =>
-{
-    c.BaseAddress = new Uri("https://localhost:7004");
-});
-
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyMarker).Assembly));
 
@@ -97,6 +101,8 @@ builder.Services.AddScoped<IProductServiceDbContext>(provider =>
     provider.GetRequiredService<ProductServiceDbContext>());
 
 var app = builder.Build();
+
+app.UseCors("ReactFrontend");
 
 if (app.Environment.IsDevelopment())
 {

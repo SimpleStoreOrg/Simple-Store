@@ -3,8 +3,10 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OrderService.Application.DTOs.External;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
+using OrderService.Application.Interfaces.External;
 using OrderService.Domain.Enums;
 
 namespace OrderService.Application.Features.Commands;
@@ -16,15 +18,18 @@ public class CancelOrderByMarketCommandHandler : IRequestHandler<CancelOrderByMa
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<CancelOrderByMarketCommandHandler> _logger;
     private readonly IHttpContextAccessor _accessor;
+    private readonly IProductApi _productApi;
 
     public CancelOrderByMarketCommandHandler(
         IOrderServiceDbContext dbContext,
         ILogger<CancelOrderByMarketCommandHandler> logger,
-        IHttpContextAccessor accessor)
+        IHttpContextAccessor accessor,
+        IProductApi productApi)
     {
         _dbContext = dbContext;
         _logger = logger;
         _accessor = accessor;
+        _productApi = productApi;
     }
 
     public async Task Handle(CancelOrderByMarketCommand request, CancellationToken cancellationToken)
@@ -47,7 +52,7 @@ public class CancelOrderByMarketCommandHandler : IRequestHandler<CancelOrderByMa
 
             long marketId = long.Parse(marketIdStr);
 
-            query = query.Where(p => p.OrderItems.Any(oi => oi.MarketId == marketId));
+            query = query.Where(o => o.OrderItems.Any(oi => oi.MarketId == marketId));
         }
         
         var order = await query.FirstOrDefaultAsync(cancellationToken);
@@ -70,6 +75,19 @@ public class CancelOrderByMarketCommandHandler : IRequestHandler<CancelOrderByMa
         try
         {
             _logger.LogInformation("Cancelling Order {OrderId}", request.OrderId);
+            
+            var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+
+            foreach (var item in order.OrderItems)
+            {
+                _logger.LogInformation("Restoring stock for Product {ProductId}. Quantity: {Quantity}", item.ProductId,
+                    item.Quantity);
+
+                await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest
+                {
+                    Quantity = -item.Quantity
+                }, token);
+            }
             
             order.Status = OrderStatus.CancelledByShop;
             

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -38,9 +39,27 @@ public class AssignOrderCommandHandler : IRequestHandler<AssignOrderCommand>
 
         if (order == null)
         {
-            _logger.LogWarning("Order with ID {OrderId} not found",
-                order?.Id);
-            throw new OrderNotFoundException(order!.Id);
+            _logger.LogWarning("Order with ID {OrderId} not found", order?.Id);
+            throw new OrderNotFoundException(request.OrderId);
+        }
+
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+        var currentUserIdStr = _accessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (currentUserIdStr == null)
+        {
+            throw new NotAuthorizedException("User Id was not found");
+        }
+        
+        long currentUserId = long.Parse(currentUserIdStr);
+
+        if (role == "ShopperAssistant")
+        {
+            if (request.Request.ShopperAssistantId != currentUserId)
+            {
+                throw new NotAuthorizedException("A Shopper Assistant can only assign an order to himself");
+            }
         }
 
         var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();

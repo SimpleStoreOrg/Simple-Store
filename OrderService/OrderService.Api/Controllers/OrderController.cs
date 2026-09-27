@@ -31,9 +31,15 @@ public class OrderController : ControllerBase
         [FromQuery] DateTime? createdAtFrom,
         [FromQuery] DateTime? createdAtTo)
     {
-        var result =
-            await _mediator.Send(new GetAllOrdersQuery(pageNumber, pageSize, customerIds, shopperAssistant, statuses,
-                createdAtFrom, createdAtTo));
+        var result = await _mediator.Send(new GetAllOrdersQuery(
+                pageNumber,
+                pageSize,
+                customerIds,
+                shopperAssistant,
+                statuses,
+                createdAtFrom,
+                createdAtTo));
+        
         return Ok(result);
     }
     
@@ -42,6 +48,22 @@ public class OrderController : ControllerBase
     public async Task<ActionResult<OrderResponse>> GetOrderByIdAsync(long id)
     {
         var result = await _mediator.Send(new GetOrderByIdQuery(id));
+        return Ok(result);
+    }
+    
+    [HttpGet("orderhistory")]
+    public async Task<IActionResult> GetAllOrderHistoryAsync(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        [FromQuery] DateTime? orderedFrom,
+        [FromQuery] DateTime? orderedTo)
+    {
+        var result = await _mediator.Send(new GetAllOrderHistoryQuery(
+                pageNumber,
+                pageSize,
+                orderedFrom,
+                orderedTo));
+        
         return Ok(result);
     }
 
@@ -62,6 +84,14 @@ public class OrderController : ControllerBase
     }
     
     [Authorize(Roles = "Customer")]
+    [HttpPost]
+    public async Task<IActionResult> CreateOrderAsync()
+    {
+        var result= await _mediator.Send(new CreateOrderCommand());
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Customer")]
     [HttpPost("{id}/cancelbycustomer")]
     public async Task<IActionResult> CancelByCustomerAsync(long id)
     {
@@ -79,7 +109,7 @@ public class OrderController : ControllerBase
     
     [Authorize(Roles = "Admin,ShopperAssistant")]
     [HttpPost("{id}/pay")]
-    public async Task<IActionResult> PayAsync(int id, PayOrderRequest request)
+    public async Task<IActionResult> PayAsync(long id, PayOrderRequest request)
     {
         var result = await _mediator.Send(new PayOrderCommand(id, request.AmountPaid));
         return Ok(result);

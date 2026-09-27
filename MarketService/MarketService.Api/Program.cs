@@ -15,6 +15,17 @@ using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
@@ -71,12 +82,12 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("AdminPosition", "SuperAdmin");
     });
     
-    options.AddPolicy("CustomerOrSuperAdmin", policy =>
+    options.AddPolicy("CustomerOrAdmin", policy =>
     {
         policy.RequireAssertion(context =>
             context.User.IsInRole("Customer") ||
-            (context.User.IsInRole("Admin") &&
-             context.User.HasClaim("AdminPosition", "SuperAdmin")));
+            context.User.IsInRole("ShopperAssistant") ||
+            context.User.IsInRole("Admin"));
     });
 });
     
@@ -99,6 +110,8 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddScoped<IMarketServiceDbContext>(provider => provider.GetRequiredService<MarketServiceDbContext>());
 
 var app = builder.Build();
+
+app.UseCors("ReactFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

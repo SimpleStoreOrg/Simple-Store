@@ -6,7 +6,6 @@ using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
-using UserService.Domain.Entities;
 using UserService.Domain.Enums;
 
 namespace UserService.Application.Features.ShopperAssistants.Commands;
@@ -44,9 +43,10 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         }
 
         long marketId = long.Parse(marketIdStr);
-        
+
         var shopperAssistant = await _dbContext.ShopperAssistants
-            .FirstOrDefaultAsync(x => x.Id == request.ShopperAssistantId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == request.ShopperAssistantId && x.MarketId == marketId,
+                cancellationToken: cancellationToken);
         
         if (shopperAssistant == null)
         {
@@ -73,6 +73,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
             throw new ShopperAssistantAlreadyExistsException();
         }
         
+        shopperAssistant.MarketId = marketId;
         shopperAssistant.Name = request.Request.Name;
         shopperAssistant.Surname = request.Request.Surname;
         shopperAssistant.Email = email;

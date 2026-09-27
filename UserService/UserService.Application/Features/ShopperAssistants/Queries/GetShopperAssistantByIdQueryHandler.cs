@@ -35,7 +35,7 @@ public class GetShopperAssistantByIdQueryHandler : IRequestHandler<GetShopperAss
         var query = _dbContext.ShopperAssistants.AsNoTracking()
             .Where(s => s.Id == request.ShopperAssistantId);
         
-        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
+        if (role == "Admin" && adminPosition == "MarketAdmin")
         {
             var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
 

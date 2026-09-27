@@ -39,8 +39,8 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("PickUpDeadline")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -76,6 +76,9 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("TotalItemPrice")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CartEntityId");
@@ -109,6 +112,9 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -141,6 +147,9 @@ namespace OrderService.Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalItemPrice")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");

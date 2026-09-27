@@ -36,7 +36,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         
         if (marketIdStr == null)
         {
-            throw new NotAuthorizedException("Market ID not found/authorized");
+            throw new NotAuthorizedException("Market ID not found");
         }
 
         long marketId = long.Parse(marketIdStr);
@@ -59,6 +59,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             throw new ProductNotFoundException(request.ProductId);
         }
 
+        product.MarketId = marketId;
         product.Name = request.Request.Name;
         product.Price = request.Request.Price;
         product.Stock = request.Request.Stock;
