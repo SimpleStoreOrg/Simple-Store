@@ -32,7 +32,11 @@ export async function apiClient(
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers,
-                Authorization: `Bearer ${accessToken}`,
+                ...(accessToken
+                    ? {
+                        Authorization: `Bearer ${accessToken}`,
+                    }
+                    : {}),
             },
         }
     )
