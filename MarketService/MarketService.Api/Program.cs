@@ -20,13 +20,19 @@ var allowedOrigins = new List<string>
     "http://localhost:5173",
 };
 
+var frontendUrl = builder.Configuration["FrontendUrl"];
+if (!string.IsNullOrEmpty(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl);
+}
+
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactFrontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(allowedOrigins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
