@@ -1,7 +1,9 @@
 import { apiClient } from './api/apiClient'
 import type { OrdersResponse } from '../types/order'
 
-const ORDER_SERVICE_URL = 'https://localhost:7001/api'
+const ORDER_SERVICE_URL =
+    import.meta.env.VITE_ORDER_SERVICE_URL ??
+    'https://localhost:7001/api'
 
 export async function getOrderHistory(
     pageNumber = 1,

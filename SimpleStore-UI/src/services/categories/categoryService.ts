@@ -5,7 +5,9 @@ import type {
     Category,
 } from '../../types/category'
 
-const PRODUCT_SERVICE_URL = 'https://localhost:7002/api'
+const PRODUCT_SERVICE_URL =
+    import.meta.env.VITE_PRODUCT_SERVICE_URL ??
+    'https://localhost:7002/api'
 
 export async function getAllCategories(): Promise<CategoriesResponse> {
     return apiClient(

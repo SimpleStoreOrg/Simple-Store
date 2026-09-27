@@ -7,6 +7,7 @@ import type {
 } from '../../types/admin'
 
 const USER_SERVICE_URL =
+    import.meta.env.VITE_USER_SERVICE_URL ??
     'https://localhost:7003/api'
 
 export async function getAllAdmins() {

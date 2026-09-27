@@ -1,6 +1,8 @@
 import { apiClient } from '../api/apiClient'
 
-const ORDER_SERVICE_URL = 'https://localhost:7001/api'
+const ORDER_SERVICE_URL =
+    import.meta.env.VITE_ORDER_SERVICE_URL ??
+    'https://localhost:7001/api'
 
 export interface CartItemRequest {
     productId: number

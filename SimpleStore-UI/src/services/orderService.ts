@@ -8,7 +8,9 @@ import type {
     UpdateOrderStatusRequest,
 } from '../types/order'
 
-const ORDER_SERVICE_URL = 'https://localhost:7001/api'
+const ORDER_SERVICE_URL =
+    import.meta.env.VITE_ORDER_SERVICE_URL ??
+    'https://localhost:7001/api'
 
 export interface PaymentResponse {
     total: number

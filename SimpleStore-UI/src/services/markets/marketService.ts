@@ -4,7 +4,9 @@ import type {
     UpdateMarketRequest,
 } from '../../types/market'
 
-const MARKET_SERVICE_URL = 'https://localhost:7004/api'
+const MARKET_SERVICE_URL =
+    import.meta.env.VITE_MARKET_SERVICE_URL ??
+    'https://localhost:7004/api'
 
 export async function getAllMarkets() {
     return apiClient(

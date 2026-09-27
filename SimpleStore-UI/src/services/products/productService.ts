@@ -1,6 +1,8 @@
 import { apiClient } from '../api/apiClient'
 
-const PRODUCT_SERVICE_URL = 'https://localhost:7002/api'
+const PRODUCT_SERVICE_URL =
+    import.meta.env.VITE_PRODUCT_SERVICE_URL ??
+    'https://localhost:7002/api'
 
 export interface GetAllProductsParams {
     pageNumber?: number

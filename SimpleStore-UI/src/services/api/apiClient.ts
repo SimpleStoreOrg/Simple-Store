@@ -1,6 +1,8 @@
 import { useAuthStore } from '../../stores/authStore'
 
-const USER_SERVICE_URL = 'https://localhost:7003/api'
+const USER_SERVICE_URL =
+    import.meta.env.VITE_USER_SERVICE_URL ??
+    'https://localhost:7003/api'
 
 export class ApiError extends Error {
     status: number
