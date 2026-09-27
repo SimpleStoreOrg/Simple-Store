@@ -12,8 +12,8 @@ using UserService.Infrastructure;
 namespace UserService.Infrastructure.Migrations
 {
     [DbContext(typeof(UserServiceDbContext))]
-    [Migration("20260724062330_AddUserRolesAndPositions")]
-    partial class AddUserRolesAndPositions
+    [Migration("20260927114934_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace UserService.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("UserService.Domain.Entities.RefreshToken", b =>
+            modelBuilder.Entity("UserService.Domain.Entities.RefreshTokenEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,11 +43,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Token")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -74,30 +73,31 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("character varying(34)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long?>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
                     b.Property<string>("Surname")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -106,6 +106,22 @@ namespace UserService.Infrastructure.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("UserEntity");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("UserService.Domain.Entities.AdminEntity", b =>
+                {
+                    b.HasBaseType("UserService.Domain.Entities.UserEntity");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
+                    b.ToTable("Users", t =>
+                        {
+                            t.Property("Position")
+                                .HasColumnName("AdminEntity_Position");
+                        });
+
+                    b.HasDiscriminator().HasValue("AdminEntity");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.CustomerEntity", b =>

@@ -47,7 +47,7 @@ namespace UserService.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.UserEntity", b =>
@@ -72,6 +72,9 @@ namespace UserService.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<long?>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
@@ -95,7 +98,7 @@ namespace UserService.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("UserEntity");
 
@@ -106,13 +109,10 @@ namespace UserService.Infrastructure.Migrations
                 {
                     b.HasBaseType("UserService.Domain.Entities.UserEntity");
 
-                    b.Property<long>("MarketId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("Position")
                         .HasColumnType("integer");
 
-                    b.ToTable("Users", null, t =>
+                    b.ToTable("Users", t =>
                         {
                             t.Property("Position")
                                 .HasColumnName("AdminEntity_Position");
