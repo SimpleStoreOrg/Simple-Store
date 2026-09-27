@@ -16,6 +16,17 @@ using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = new List<string>
+{
+    "http://localhost:5173",
+};
+
+var frontendUrl = builder.Configuration["FrontendUrl"];
+if (!string.IsNullOrEmpty(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl);
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -37,6 +48,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddValidatorsFromAssemblyContaining<AssignOrderRequestValidator>();
+
+var userServiceUrl =
+    builder.Configuration["Services:UserServiceUrl"]
+    ?? "https://localhost:7003";
+
+var productServiceUrl =
+    builder.Configuration["Services:ProductServiceUrl"]
+    ?? "https://localhost:7002";
 
 builder.Services.AddRefitClient<ICustomerApi>().ConfigureHttpClient(c =>
 {
@@ -108,6 +127,12 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddScoped<IOrderServiceDbContext>(provider => provider.GetRequiredService<OrderServiceDbContext>());
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<OrderServiceDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseCors("Frontend");
 
