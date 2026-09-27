@@ -14,6 +14,17 @@ using ProductService.Infrastructure.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = new List<string>
+{
+    "http://localhost:5173",
+};
+
+var frontendUrl = builder.Configuration["FrontendUrl"];
+if (!string.IsNullOrEmpty(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl);
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactFrontend", policy =>
@@ -101,6 +112,12 @@ builder.Services.AddScoped<IProductServiceDbContext>(provider =>
     provider.GetRequiredService<ProductServiceDbContext>());
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ProductServiceDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseCors("ReactFrontend");
 
