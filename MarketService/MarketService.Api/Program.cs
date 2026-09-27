@@ -15,6 +15,12 @@ using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = new List<string>
+{
+    "http://localhost:5173",
+};
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactFrontend", policy =>
@@ -35,6 +41,10 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateMarketRequestValidator>();
+
+var userServiceUrl =
+    builder.Configuration["Services:UserServiceUrl"]
+    ?? "https://localhost:7003";
 
 builder.Services.AddRefitClient<IMarketAdminApi>().ConfigureHttpClient(c =>
 {
@@ -110,6 +120,12 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddScoped<IMarketServiceDbContext>(provider => provider.GetRequiredService<MarketServiceDbContext>());
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<MarketServiceDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseCors("ReactFrontend");
 
