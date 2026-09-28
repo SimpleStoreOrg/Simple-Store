@@ -50,11 +50,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateMarketRequestValidato
 
 var userServiceUrl =
     builder.Configuration["Services:UserServiceUrl"]
-    ?? "https://localhost:7003";
+    ?? "https://simple-store-production.up.railway.app";
 
 builder.Services.AddRefitClient<IMarketAdminApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7003");
+    c.BaseAddress = new Uri(userServiceUrl);
 });
 
 builder.Services.AddEndpointsApiExplorer();
