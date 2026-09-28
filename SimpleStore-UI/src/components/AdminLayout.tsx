@@ -13,6 +13,7 @@ import {
     ShopOutlined,
     SafetyOutlined,
     AppstoreOutlined,
+    BarChartOutlined,
     LogoutOutlined,
     DownOutlined,
 } from '@ant-design/icons'
@@ -114,6 +115,14 @@ function AdminLayout() {
 
         if (
             location.pathname.startsWith(
+                '/admin/reports'
+            )
+        ) {
+            return 'reports'
+        }
+
+        if (
+            location.pathname.startsWith(
                 '/admin/markets'
             )
         ) {
@@ -191,6 +200,13 @@ function AdminLayout() {
             label: 'Orders',
             onClick: () =>
                 navigate('/admin/orders'),
+        },
+        {
+            key: 'reports',
+            icon: <BarChartOutlined />,
+            label: 'Reports',
+            onClick: () =>
+                navigate('/admin/reports'),
         },
 
         ...(isSuperAdmin

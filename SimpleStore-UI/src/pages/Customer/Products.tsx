@@ -3,6 +3,7 @@ import {
     Col,
     Empty,
     InputNumber,
+    Rate,
     Row,
     Spin,
     Switch,
@@ -17,6 +18,7 @@ import {
 } from '@ant-design/icons'
 import {
     useQuery,
+    useQueries,
     useMutation,
     useQueryClient,
 } from '@tanstack/react-query'
@@ -24,6 +26,7 @@ import { useMemo, useState } from 'react'
 
 import { getAllProducts } from '../../services/products/productService'
 import { getAllCategories } from '../../services/categories/categoryService'
+import { getReviewsByProduct } from '../../services/reviews/reviewService'
 
 import {
     addItemsToCart,
@@ -38,6 +41,7 @@ import { ApiError } from '../../services/api/apiClient'
 import type { Product } from '../../types/product'
 import type { Market } from '../../types/market'
 import type { Category } from '../../types/category'
+import type { ReviewsByProductSummary } from '../../types/review'
 import type { Cart } from '../../services/cart/cartService'
 
 interface ProductFilters {
@@ -118,6 +122,39 @@ function Products() {
         queryKey: ['categories'],
         queryFn: getAllCategories,
     })
+
+    const products: Product[] = data?.items ?? []
+
+    // Batch-fetch review summaries for all visible products.
+    // Each entry has its own cache key, so Products re-renders cheaply.
+    const reviewQueries = useQueries({
+        queries: products.map((product) => ({
+            queryKey: [
+                'reviews-by-product',
+                product.id,
+            ],
+            queryFn: () =>
+                getReviewsByProduct(product.id),
+            staleTime: 60_000,
+        })),
+    })
+
+    const reviewSummaryByProductId = useMemo(() => {
+        const map = new Map<
+            number,
+            ReviewsByProductSummary
+        >()
+
+        products.forEach((product, index) => {
+            const query = reviewQueries[index]
+
+            if (query?.data) {
+                map.set(product.id, query.data)
+            }
+        })
+
+        return map
+    }, [products, reviewQueries])
 
     const addToCartMutation = useMutation({
         mutationFn: async ({
@@ -298,8 +335,6 @@ function Products() {
             </div>
         )
     }
-
-    const products: Product[] = data?.items ?? []
 
     const markets: Market[] =
         marketsData?.items ?? []
@@ -560,6 +595,21 @@ function Products() {
                                                     product.stock ===
                                                     0
 
+                                                const reviewSummary =
+                                                    reviewSummaryByProductId.get(
+                                                        product.id
+                                                    )
+
+                                                const reviewCount =
+                                                    reviewSummary
+                                                        ?.reviewCount ??
+                                                    0
+
+                                                const averageRating =
+                                                    reviewSummary
+                                                        ?.averageRating ??
+                                                    0
+
                                                 return (
                                                     <Col
                                                         key={
@@ -596,7 +646,7 @@ function Products() {
                                                                         }
                                                                     </h3>
 
-                                                                    <div className="flex items-center gap-1.5 text-xs text-[#6b7280] mb-4">
+                                                                    <div className="flex items-center gap-1.5 text-xs text-[#6b7280] mb-2">
                                                                         <ShopOutlined
                                                                             style={{
                                                                                 fontSize: 11,
@@ -607,6 +657,42 @@ function Products() {
                                                                             {market?.name ??
                                                                                 `Market #${product.marketId}`}
                                                                         </span>
+                                                                    </div>
+
+                                                                    {/* Rating row */}
+                                                                    <div className="flex items-center gap-2 mb-3 min-h-[20px]">
+                                                                        {reviewCount >
+                                                                        0 ? (
+                                                                            <>
+                                                                                <Rate
+                                                                                    disabled
+                                                                                    allowHalf
+                                                                                    value={
+                                                                                        averageRating
+                                                                                    }
+                                                                                    style={{
+                                                                                        fontSize: 14,
+                                                                                    }}
+                                                                                />
+
+                                                                                <span className="text-xs text-[#6b7280]">
+                                                                                    {averageRating.toFixed(
+                                                                                        1
+                                                                                    )}{' '}
+                                                                                    (
+                                                                                    {
+                                                                                        reviewCount
+                                                                                    }
+                                                                                    )
+                                                                                </span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <span className="text-xs text-[#9ca3af]">
+                                                                                No
+                                                                                reviews
+                                                                                yet
+                                                                            </span>
+                                                                        )}
                                                                     </div>
 
                                                                     <div className="flex items-baseline justify-between mb-2">

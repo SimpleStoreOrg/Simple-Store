@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 import { getOrderHistory } from '../../services/orderHistoryService'
 import { getAllProducts } from '../../services/products/productService'
@@ -17,8 +18,19 @@ import type { Product } from '../../types/product'
 
 import { OrderStatus } from '../../types/orderStatus'
 
+import ReviewModal from '../../components/ReviewModal'
+
+interface ReviewTarget {
+    orderId: number
+    productId: number
+    productName: string
+}
+
 function OrderHistory() {
     const navigate = useNavigate()
+
+    const [reviewTarget, setReviewTarget] =
+        useState<ReviewTarget | null>(null)
 
     const {
         data: ordersData,
@@ -105,6 +117,25 @@ function OrderHistory() {
             product,
         ])
     )
+
+    const isFromToday = (createdAt: string | null) => {
+        if (!createdAt) {
+            return false
+        }
+
+        const orderDate = new Date(createdAt)
+
+        const today = new Date()
+
+        return (
+            orderDate.getUTCFullYear() ===
+                today.getUTCFullYear() &&
+            orderDate.getUTCMonth() ===
+                today.getUTCMonth() &&
+            orderDate.getUTCDate() ===
+                today.getUTCDate()
+        )
+    }
 
     const getStatusLabel = (
         status: OrderStatus
@@ -204,6 +235,11 @@ function OrderHistory() {
                                     order.status
                                 )
 
+                            const canReview =
+                                order.status ===
+                                    OrderStatus.Completed &&
+                                isFromToday(order.createdAt)
+
                             return (
                                 <div
                                     key={order.id}
@@ -260,40 +296,70 @@ function OrderHistory() {
                                                 Items
                                             </div>
 
-                                            <div className="space-y-2">
+                                            <div className="space-y-3">
                                                 {order.items.map(
                                                     (
                                                         item
-                                                    ) => (
-                                                        <div
-                                                            key={`${order.id}-${item.productId}-${item.marketId}`}
-                                                            className="flex justify-between text-sm"
-                                                        >
-                                                            <div>
-                                                                <span className="font-medium text-[#0a0a0a]">
-                                                                    {productMap.get(
-                                                                            item.productId
-                                                                        )
-                                                                            ?.name ??
-                                                                        `Product #${item.productId}`}
-                                                                </span>
+                                                    ) => {
+                                                        const productName =
+                                                            productMap.get(
+                                                                    item.productId
+                                                                )
+                                                                    ?.name ??
+                                                            `Product #${item.productId}`
 
-                                                                <span className="ml-2 text-[#6b7280]">
-                                                                    ×{' '}
-                                                                    {
-                                                                        item.quantity
-                                                                    }
-                                                                </span>
+                                                        return (
+                                                            <div
+                                                                key={`${order.id}-${item.productId}-${item.marketId}`}
+                                                                className="flex justify-between items-center text-sm gap-4"
+                                                            >
+                                                                <div className="flex-1 min-w-0">
+                                                                    <span className="font-medium text-[#0a0a0a]">
+                                                                        {
+                                                                            productName
+                                                                        }
+                                                                    </span>
+
+                                                                    <span className="ml-2 text-[#6b7280]">
+                                                                        ×{' '}
+                                                                        {
+                                                                            item.quantity
+                                                                        }
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="text-[#0a0a0a] tabular-nums">
+                                                                        $
+                                                                        {item.totalItemPrice.toFixed(
+                                                                            2
+                                                                        )}
+                                                                    </span>
+
+                                                                    {canReview && (
+                                                                        <Button
+                                                                            size="small"
+                                                                            type="primary"
+                                                                            ghost
+                                                                            onClick={() =>
+                                                                                setReviewTarget(
+                                                                                    {
+                                                                                        orderId:
+                                                                                            order.id,
+                                                                                        productId:
+                                                                                            item.productId,
+                                                                                        productName,
+                                                                                    }
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Leave a Review
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
                                                             </div>
-
-                                                            <span className="text-[#0a0a0a] tabular-nums">
-                                                                $
-                                                                {item.totalItemPrice.toFixed(
-                                                                    2
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    )
+                                                        )
+                                                    }
                                                 )}
                                             </div>
                                         </div>
@@ -317,6 +383,18 @@ function OrderHistory() {
                         }
                     )}
                 </div>
+            )}
+
+            {reviewTarget && (
+                <ReviewModal
+                    open={true}
+                    orderId={reviewTarget.orderId}
+                    productId={reviewTarget.productId}
+                    productName={reviewTarget.productName}
+                    onClose={() =>
+                        setReviewTarget(null)
+                    }
+                />
             )}
         </div>
     )

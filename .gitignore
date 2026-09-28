@@ -26,3 +26,4 @@ dist/
 .env.local
 .vercel
 .env*
+*.bak

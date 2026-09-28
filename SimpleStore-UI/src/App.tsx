@@ -22,6 +22,7 @@ import Admins from './pages/Admin/Admins'
 import Dashboard from './pages/Admin/Dashboard'
 import MyMarket from './pages/Admin/MyMarket'
 import AdminProfile from './pages/Admin/Profile'
+import Reports from './pages/Admin/Reports'
 
 import ShopperAssistantDashboard from './pages/ShopperAssistant/Dashboard'
 import ShopperAssistantProfile from './pages/ShopperAssistant/Profile'
@@ -101,6 +102,11 @@ function App() {
                         <Route
                             path="orders"
                             element={<AdminOrders />}
+                        />
+
+                        <Route
+                            path="reports"
+                            element={<Reports />}
                         />
 
                         <Route
