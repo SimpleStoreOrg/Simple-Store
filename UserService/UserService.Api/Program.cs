@@ -52,11 +52,13 @@ builder.Services.AddScoped<JwtService>();
 
 builder.Services.AddHttpContextAccessor();
 
-var orderServiceUrl = builder.Configuration["Services:OrderServiceUrl"] ?? "https://localhost:7001";
+var orderServiceUrl =
+    builder.Configuration["Services:OrderServiceUrl"]
+    ?? "https://simple-store-hxxn.onrender.com";
 
 builder.Services.AddRefitClient<IOrderApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7001");
+    c.BaseAddress = new Uri(orderServiceUrl);
 });
 
 builder.Services.AddAuthentication("Bearer")
