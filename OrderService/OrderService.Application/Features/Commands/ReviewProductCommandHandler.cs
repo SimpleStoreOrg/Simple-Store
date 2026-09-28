@@ -54,15 +54,21 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
         
         if (order.Status != OrderStatus.Completed)
         {
-            _logger.LogWarning("Order {OrderId} is not completed. Cannot review.", request.Request.OrderId);
-            throw new InvalidOrderException("Only completed orders can be reviewed.");
+            _logger.LogWarning("Order {OrderId} is not completed. Cannot review", request.Request.OrderId);
+            throw new InvalidOrderException("Only completed orders can be reviewed");
         }
         
         var today = DateTime.UtcNow.Date;
         if (order.CreatedAt.Date != today)
         {
-            _logger.LogWarning("Order {OrderId} is not from today. Cannot review.", request.Request.OrderId);
-            throw new InvalidOrderException("Only today's completed orders can be reviewed.");
+            _logger.LogWarning("Order {OrderId} is not from today. Cannot review", request.Request.OrderId);
+            throw new InvalidOrderException("Only today's completed orders can be reviewed");
+        }
+        
+        if (request.Request.Rating < 1 || request.Request.Rating > 5)
+        {
+            _logger.LogWarning("Invalid rating {Rating} for order {OrderId}", request.Request.Rating, request.Request.OrderId);
+            throw new InvalidOrderException("Rating must be between 1 and 5");
         }
 
         var orderItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == request.Request.ProductId);
@@ -75,7 +81,7 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
 
         var reviewed = await _dbContext
             .Reviews.AnyAsync(
-                r => r.OrderId == request.Request.OrderId && r.ProductId == request.Request.ProductId &&
+                r => r.ProductId == request.Request.ProductId &&
                      r.CustomerId == customerId, cancellationToken);
         
         if (reviewed)

@@ -130,4 +130,11 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(new GetMarketCustomerIdsQuery());
         return Ok(result);
     }
+    
+    [HttpGet("reviewsbyproduct/{id:long}")]
+    public async Task<IActionResult> GetReviewsByProductAsync(long id)
+    {
+        var result = await _mediator.Send(new GetReviewsByProductQuery(id));
+        return Ok(result);
+    }
 }
