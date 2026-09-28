@@ -59,17 +59,17 @@ var productServiceUrl =
 
 builder.Services.AddRefitClient<ICustomerApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7003");
+    c.BaseAddress = new Uri(userServiceUrl);
 });
 
 builder.Services.AddRefitClient<IShopperAssistantApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7003");
+    c.BaseAddress = new Uri(userServiceUrl);
 });
 
 builder.Services.AddRefitClient<IProductApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7002");
+    c.BaseAddress = new Uri(productServiceUrl);
 });
 
 builder.Services.AddEndpointsApiExplorer();
