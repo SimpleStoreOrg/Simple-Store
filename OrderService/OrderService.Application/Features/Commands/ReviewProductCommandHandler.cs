@@ -8,6 +8,7 @@ using OrderService.Application.DTOs.Response;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Domain.Entities;
+using OrderService.Domain.Enums;
 
 namespace OrderService.Application.Features.Commands;
 
@@ -49,6 +50,19 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
         {
             _logger.LogWarning("Order with ID {OrderId} not found", request.Request.OrderId);
             throw new OrderNotFoundException(request.Request.OrderId);
+        }
+        
+        if (order.Status != OrderStatus.Completed)
+        {
+            _logger.LogWarning("Order {OrderId} is not completed. Cannot review.", request.Request.OrderId);
+            throw new InvalidOrderException("Only completed orders can be reviewed.");
+        }
+        
+        var today = DateTime.UtcNow.Date;
+        if (order.CreatedAt.Date != today)
+        {
+            _logger.LogWarning("Order {OrderId} is not from today. Cannot review.", request.Request.OrderId);
+            throw new InvalidOrderException("Only today's completed orders can be reviewed.");
         }
 
         var orderItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == request.Request.ProductId);
