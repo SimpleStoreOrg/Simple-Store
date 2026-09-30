@@ -9,4 +9,5 @@ public class OrderItemsEntity
     public decimal Quantity { get; set; }
     public decimal Price { get; set; }
     public decimal TotalItemPrice { get; set; }
+    public OrderEntity Order { get; set; }
 }

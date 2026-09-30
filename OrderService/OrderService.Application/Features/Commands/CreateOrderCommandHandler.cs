@@ -107,6 +107,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         {
             order.OrderItems.Add(new OrderItemsEntity
             {
+                Order = order,
                 ProductId = cartItem.ProductId,
                 MarketId = cartItem.MarketId,
                 Price = cartItem.Price,

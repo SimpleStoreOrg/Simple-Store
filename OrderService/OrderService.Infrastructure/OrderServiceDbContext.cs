@@ -22,6 +22,12 @@ public class OrderServiceDbContext : DbContext, IOrderServiceDbContext
         modelBuilder.Entity<CartEntity>()
             .HasQueryFilter(x => x.DeletedAt == null);
         
+        modelBuilder.Entity<OrderItemsEntity>()
+            .HasOne(oi => oi.Order)
+            .WithMany(o => o.OrderItems)
+            .HasForeignKey(oi => oi.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
         base.OnModelCreating(modelBuilder);
     }
 
