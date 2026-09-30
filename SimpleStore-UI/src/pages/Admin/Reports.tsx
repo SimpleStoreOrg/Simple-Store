@@ -1,6 +1,8 @@
 import {
+    Button,
     Card,
     Col,
+    DatePicker,
     Empty,
     Rate,
     Row,
@@ -12,19 +14,27 @@ import {
 } from 'antd'
 import {
     DollarOutlined,
+    ReloadOutlined,
     ShoppingOutlined,
     StarOutlined,
 } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import dayjs, { Dayjs } from 'dayjs'
 
 import { getTotalRevenue, getTopProductsByCategory } from '../../services/reports/reportService'
 import { getAllReviews } from '../../services/reviews/reviewService'
 import { getAllCategories } from '../../services/categories/categoryService'
+import { getAllProducts } from '../../services/products/productService'
+import { getAllCustomers } from '../../services/customers/customerService'
 
 import type { Category } from '../../types/category'
+import type { Customer } from '../../types/customer'
+import type { Product } from '../../types/product'
 import type { TopProduct } from '../../types/report'
 import type { TopProductsByCategory } from '../../types/report'
+
+const { RangePicker } = DatePicker
 
 interface ReviewRow {
     id: number
@@ -38,13 +48,25 @@ interface ReviewRow {
 function Reports() {
     const [activeTab, setActiveTab] = useState<string>('revenue')
 
+    const [dateRange, setDateRange] = useState<
+        [Dayjs, Dayjs] | null
+    >([dayjs().startOf('day'), dayjs().endOf('day')])
+
+    const fromIso = dateRange
+        ? dateRange[0].toISOString()
+        : undefined
+
+    const toIso = dateRange
+        ? dateRange[1].toISOString()
+        : undefined
+
     const {
         data: revenueData,
         isLoading: revenueLoading,
         isError: revenueError,
     } = useQuery({
-        queryKey: ['reports-total-revenue'],
-        queryFn: () => getTotalRevenue(),
+        queryKey: ['reports-total-revenue', fromIso, toIso],
+        queryFn: () => getTotalRevenue(fromIso, toIso),
         enabled: activeTab === 'revenue',
     })
 
@@ -53,8 +75,9 @@ function Reports() {
         isLoading: topProductsLoading,
         isError: topProductsError,
     } = useQuery({
-        queryKey: ['reports-top-products'],
-        queryFn: () => getTopProductsByCategory(1, 50),
+        queryKey: ['reports-top-products', fromIso, toIso],
+        queryFn: () =>
+            getTopProductsByCategory(1, 50, undefined, fromIso, toIso),
         enabled: activeTab === 'top-products',
     })
 
@@ -73,6 +96,23 @@ function Reports() {
     } = useQuery({
         queryKey: ['categories'],
         queryFn: getAllCategories,
+        enabled: activeTab === 'top-products',
+    })
+
+    const {
+        data: productsData,
+    } = useQuery({
+        queryKey: ['products'],
+        queryFn: () => getAllProducts({ pageSize: 500 }),
+        enabled: activeTab === 'reviews',
+    })
+
+    const {
+        data: customersData,
+    } = useQuery({
+        queryKey: ['all-customers'],
+        queryFn: getAllCustomers,
+        enabled: activeTab === 'reviews',
     })
 
     const categoryMap = useMemo(() => {
@@ -86,6 +126,49 @@ function Reports() {
 
         return map
     }, [categoriesData])
+
+    const productMap = useMemo(() => {
+        const map = new Map<number, Product>()
+
+        const items = productsData?.items ?? []
+
+        items.forEach((product: Product) => {
+            map.set(product.id, product)
+        })
+
+        return map
+    }, [productsData])
+
+    const customerMap = useMemo(() => {
+        const map = new Map<number, Customer>()
+
+        const items = customersData?.items ?? []
+
+        items.forEach((customer: Customer) => {
+            map.set(customer.id, customer)
+        })
+
+        return map
+    }, [customersData])
+
+    const getCustomerDisplayName = (customerId: number) => {
+        const customer = customerMap.get(customerId)
+
+        if (!customer) {
+            return `Customer #${customerId}`
+        }
+
+        const fullName = `${customer.name ?? ''} ${customer.surname ?? ''}`.trim()
+
+        return fullName || customer.username || `Customer #${customerId}`
+    }
+
+    const handleResetRange = () => {
+        setDateRange([
+            dayjs().startOf('day'),
+            dayjs().endOf('day'),
+        ])
+    }
 
     const revenueTab = (
         <div>
@@ -155,7 +238,7 @@ function Reports() {
             ) : topProductsError ? (
                 <Empty description="Failed to load top products." />
             ) : (topProductsData?.items ?? []).length === 0 ? (
-                <Empty description="No product sales yet." />
+                <Empty description="No product sales in this period." />
             ) : (
                 <div className="space-y-6">
                     {(topProductsData?.items ?? []).map(
@@ -192,14 +275,20 @@ function Reports() {
             key: 'id',
         },
         {
-            title: 'Product ID',
+            title: 'Product',
             dataIndex: 'productId',
             key: 'productId',
+            render: (productId: number) => {
+                const product = productMap.get(productId)
+
+                return product?.name ?? `Product #${productId}`
+            },
         },
         {
-            title: 'Customer ID',
+            title: 'Customer',
             dataIndex: 'customerId',
             key: 'customerId',
+            render: (customerId: number) => getCustomerDisplayName(customerId),
         },
         {
             title: 'Rating',
@@ -254,6 +343,9 @@ function Reports() {
         </div>
     )
 
+    const showRangePicker =
+        activeTab === 'revenue' || activeTab === 'top-products'
+
     return (
         <div>
             {/* Page header */}
@@ -268,6 +360,74 @@ function Reports() {
             </div>
 
             <div className="surface-card p-6">
+                {showRangePicker && (
+                    <div className="flex flex-wrap items-center gap-3 mb-6">
+                        <span className="text-sm text-[#6b7280]">
+                            Date range:
+                        </span>
+
+                        <RangePicker
+                            value={dateRange}
+                            onChange={(values) => {
+                                if (
+                                    values &&
+                                    values[0] &&
+                                    values[1]
+                                ) {
+                                    setDateRange([
+                                        values[0],
+                                        values[1],
+                                    ])
+                                } else {
+                                    setDateRange(null)
+                                }
+                            }}
+                            allowClear
+                            presets={[
+                                {
+                                    label: 'Today',
+                                    value: [
+                                        dayjs().startOf('day'),
+                                        dayjs().endOf('day'),
+                                    ],
+                                },
+                                {
+                                    label: 'Last 7 days',
+                                    value: [
+                                        dayjs()
+                                            .subtract(6, 'day')
+                                            .startOf('day'),
+                                        dayjs().endOf('day'),
+                                    ],
+                                },
+                                {
+                                    label: 'Last 30 days',
+                                    value: [
+                                        dayjs()
+                                            .subtract(29, 'day')
+                                            .startOf('day'),
+                                        dayjs().endOf('day'),
+                                    ],
+                                },
+                                {
+                                    label: 'This month',
+                                    value: [
+                                        dayjs().startOf('month'),
+                                        dayjs().endOf('day'),
+                                    ],
+                                },
+                            ]}
+                        />
+
+                        <Button
+                            icon={<ReloadOutlined />}
+                            onClick={handleResetRange}
+                        >
+                            Reset to today
+                        </Button>
+                    </div>
+                )}
+
                 <Tabs
                     activeKey={activeTab}
                     onChange={setActiveTab}

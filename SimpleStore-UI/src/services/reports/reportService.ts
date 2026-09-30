@@ -35,7 +35,9 @@ export async function getTotalRevenue(
 export async function getTopProductsByCategory(
     pageNumber = 1,
     pageSize = 20,
-    categoryIds?: number[]
+    categoryIds?: number[],
+    from?: string,
+    to?: string
 ): Promise<TopProductsByCategoryResponse> {
     const params = new URLSearchParams({
         pageNumber: pageNumber.toString(),
@@ -46,6 +48,14 @@ export async function getTopProductsByCategory(
         categoryIds.forEach((id) =>
             params.append('categoryIds', id.toString())
         )
+    }
+
+    if (from) {
+        params.append('from', from)
+    }
+
+    if (to) {
+        params.append('to', to)
     }
 
     return apiClient(
