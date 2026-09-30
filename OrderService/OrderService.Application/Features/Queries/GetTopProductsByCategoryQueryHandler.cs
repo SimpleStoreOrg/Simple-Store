@@ -63,7 +63,7 @@ public class
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
 
-        var salesQuery = _dbContext.OrderItems.AsNoTracking().AsQueryable();
+        var salesQuery = _dbContext.OrderItems.AsNoTracking().Include(oi => oi.Order).AsQueryable();
 
         if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {
@@ -84,26 +84,18 @@ public class
             var today = DateTime.UtcNow.Date;
 
             salesQuery = salesQuery.Where(oi =>
-                _dbContext.Orders.Any(o =>
-                    o.Id == oi.OrderId &&
-                    o.CreatedAt >= today &&
-                    o.CreatedAt < today.AddDays(1)));
+                oi.Order.CreatedAt >= today &&
+                oi.Order.CreatedAt < today.AddDays(1));
         }
         
         if (request.From.HasValue)
         {
-            salesQuery = salesQuery.Where(oi =>
-                _dbContext.Orders.Any(o =>
-                    o.Id == oi.OrderId &&
-                    o.CreatedAt >= request.From.Value));
+            salesQuery = salesQuery.Where(oi => oi.Order.CreatedAt >= request.From.Value);
         }
 
         if (request.To.HasValue)
         {
-            salesQuery = salesQuery.Where(oi =>
-                _dbContext.Orders.Any(o =>
-                    o.Id == oi.OrderId &&
-                    o.CreatedAt <= request.To.Value));
+            salesQuery = salesQuery.Where(oi => oi.Order.CreatedAt <= request.To.Value);
         }
         
         var sales = await salesQuery
