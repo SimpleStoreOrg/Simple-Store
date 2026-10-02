@@ -1,11 +1,11 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UserService.Application.DTOs.Request;
 using UserService.Application.DTOs.Response;
 using UserService.Application.Exceptions;
 using UserService.Application.Interfaces.Data;
-using UserService.Domain.Entities;
 using UserService.Domain.Enums;
 
 namespace UserService.Application.Features.ShopperAssistants.Commands;
@@ -17,12 +17,16 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<UpdateShopperAssistantCommandHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public UpdateShopperAssistantCommandHandler(IUserServiceDbContext dbContext,
-        ILogger<UpdateShopperAssistantCommandHandler> logger)
+    public UpdateShopperAssistantCommandHandler(
+        IUserServiceDbContext dbContext,
+        ILogger<UpdateShopperAssistantCommandHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
 
     public async Task<ShopperAssistantResponse> Handle(UpdateShopperAssistantCommand request,
@@ -31,8 +35,18 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
     {
         _logger.LogInformation("Updating Shopper Assistant with ID: {Id}", request.ShopperAssistantId);
 
+        var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+        
+        if (marketIdStr == null)
+        {
+            throw new NotAuthorizedException("Market ID not found/authorized");
+        }
+
+        long marketId = long.Parse(marketIdStr);
+
         var shopperAssistant = await _dbContext.ShopperAssistants
-            .FirstOrDefaultAsync(x => x.Id == request.ShopperAssistantId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == request.ShopperAssistantId && x.MarketId == marketId,
+                cancellationToken: cancellationToken);
         
         if (shopperAssistant == null)
         {
@@ -45,7 +59,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
         var phoneNumber = request.Request.PhoneNumber?.Trim().ToLower();
 
         var exists = await _dbContext.ShopperAssistants
-            .AnyAsync(e =>
+            .AnyAsync(e => e.MarketId == marketId &&
                     e.Id != request.ShopperAssistantId && e.Role == RoleStatus.ShopperAssistant &&
                     (e.UserName!.Trim().ToLower() == username || e.Email!.Trim().ToLower() == email ||
                      e.PhoneNumber!.Trim().ToLower() == phoneNumber),
@@ -59,6 +73,7 @@ public class UpdateShopperAssistantCommandHandler : IRequestHandler<UpdateShoppe
             throw new ShopperAssistantAlreadyExistsException();
         }
         
+        shopperAssistant.MarketId = marketId;
         shopperAssistant.Name = request.Request.Name;
         shopperAssistant.Surname = request.Request.Surname;
         shopperAssistant.Email = email;

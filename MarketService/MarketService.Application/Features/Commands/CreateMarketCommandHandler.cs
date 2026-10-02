@@ -1,3 +1,4 @@
+using MarketService_Application.DTOs.External;
 using MarketService_Application.DTOs.Request;
 using MarketService_Application.DTOs.Response;
 using MarketService_Application.Exceptions;
@@ -19,7 +20,8 @@ public class CreateMarketCommandHandler : IRequestHandler<CreateMarketCommand, M
     private readonly IMarketAdminApi _marketAdminApi;
     private readonly IHttpContextAccessor _accessor;
 
-    public CreateMarketCommandHandler(IMarketServiceDbContext dbContext,
+    public CreateMarketCommandHandler(
+        IMarketServiceDbContext dbContext,
         ILogger<CreateMarketCommandHandler> logger,
         IMarketAdminApi marketAdminApi,
         IHttpContextAccessor accessor)
@@ -47,11 +49,12 @@ public class CreateMarketCommandHandler : IRequestHandler<CreateMarketCommand, M
         
         if (marketAdmin == null)
         {
-            _logger.LogWarning("Market Admin with ID {MarketAdmin} not found", request.Request.MarketAdminId);
+            _logger.LogWarning("Market Admin with ID {MarketAdminId} not found", request.Request.MarketAdminId);
             throw new MarketAdminNotFoundException(request.Request.MarketAdminId);
         }
         
-        _logger.LogWarning("New market creation");
+        _logger.LogInformation("Creating new market for MarketAdmin {MarketAdminId}", marketAdmin.Id);
+
         var market = new MarketEntity
         {
             MarketAdminId = marketAdmin.Id,
@@ -62,7 +65,17 @@ public class CreateMarketCommandHandler : IRequestHandler<CreateMarketCommand, M
         };
         
         await _dbContext.Markets.AddAsync(market, cancellationToken);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Market created successfully with ID {MarketId}", market.Id);
+
+        await _marketAdminApi.AssignMarketToAdmin(marketAdmin.Id, new AssignMarketRequest
+            {
+                MarketId = market.Id
+            }, token);
+
+        _logger.LogInformation("Market {MarketId} assigned to MarketAdmin {MarketAdminId}", market.Id, marketAdmin.Id);
 
         return new MarketResponse
         {

@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UserService.Application.DTOs.Request;
@@ -16,17 +18,31 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<CreateShopperAssistantCommandHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public CreateShopperAssistantCommandHandler(IUserServiceDbContext dbContext, ILogger<CreateShopperAssistantCommandHandler> logger)
+    public CreateShopperAssistantCommandHandler(
+        IUserServiceDbContext dbContext,
+        ILogger<CreateShopperAssistantCommandHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
 
     public async Task<ShopperAssistantResponse> Handle(CreateShopperAssistantCommand request,
         CancellationToken cancellationToken)
 
     {
+        var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+        
+        if (marketIdStr == null)
+        {
+            throw new NotAuthorizedException("Market ID not found.");
+        }
+        
+        long marketId = long.Parse(marketIdStr);
+        
         _logger.LogInformation("Creating Shopper Assistant. Name: {Name}, Surname: {Surname}", request.Request.Name,
             request.Request.Surname);
 
@@ -36,8 +52,9 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
 
         var exists =
             await _dbContext.ShopperAssistants.AnyAsync(
-                e => e.UserName!.Trim().ToLower() == username || e.Email == email ||
-                     e.PhoneNumber == phoneNumber,
+                e => e.MarketId == marketId && 
+                     (e.UserName!.Trim().ToLower() == username || e.Email == email ||
+                     e.PhoneNumber == phoneNumber),
                 cancellationToken);
 
         if (exists)
@@ -49,6 +66,7 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
 
         var shopperAssistant = new ShopperAssistantEntity
         {
+            MarketId = marketId,
             Name = request.Request.Name,
             Surname = request.Request.Surname,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
@@ -67,6 +85,7 @@ public class CreateShopperAssistantCommandHandler : IRequestHandler<CreateShoppe
         return new ShopperAssistantResponse
         {
             Id = shopperAssistant.Id,
+            MarketId = shopperAssistant.MarketId,
             Name = shopperAssistant.Name,
             Surname = shopperAssistant.Surname,
             Role = shopperAssistant.Role,

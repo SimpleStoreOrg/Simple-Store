@@ -72,6 +72,9 @@ namespace UserService.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<long?>("MarketId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
@@ -105,9 +108,6 @@ namespace UserService.Infrastructure.Migrations
             modelBuilder.Entity("UserService.Domain.Entities.AdminEntity", b =>
                 {
                     b.HasBaseType("UserService.Domain.Entities.UserEntity");
-
-                    b.Property<long>("MarketId")
-                        .HasColumnType("bigint");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer");

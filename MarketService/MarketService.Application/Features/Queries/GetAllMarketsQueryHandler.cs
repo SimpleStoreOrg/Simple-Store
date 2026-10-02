@@ -39,7 +39,7 @@ public class GetAllMarketsQueryHandler : IRequestHandler<GetAllMarketsQuery, Pag
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
         
-        var query = _dbContext.Markets.AsQueryable();
+        var query = _dbContext.Markets.AsNoTracking().AsQueryable();
         
         if (!string.IsNullOrWhiteSpace(request.MarketName))
         {

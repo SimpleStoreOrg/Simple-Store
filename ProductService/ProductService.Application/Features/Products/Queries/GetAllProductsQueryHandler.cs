@@ -1,11 +1,12 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.Common;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Exceptions;
 using ProductService.Application.Interfaces.Data;
-using ProductService.Application.Interfaces.Services;
 
 namespace ProductService.Application.Features.Products.Queries;
 
@@ -16,22 +17,24 @@ public record GetAllProductsQuery(
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
     long[]? CategoryIds = null,
+    long[]? ProductIds = null,
     DateTime? CreatedAtFrom = null,
-    DateTime? CreatedAtTo = null) : IRequest<PagedResponse<ProductResponse>>;
+    DateTime? CreatedAtTo = null, 
+    long? MarketId = null) : IRequest<PagedResponse<ProductResponse>>;
 
 public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, PagedResponse<ProductResponse>>
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<GetAllProductsQueryHandler> _logger;
-    private readonly ICurrentUserService _currentUserService;
+    private readonly IHttpContextAccessor _accessor;
 
     public GetAllProductsQueryHandler(IProductServiceDbContext dbContext,
         ILogger<GetAllProductsQueryHandler> logger,
-        ICurrentUserService currentUserService)
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _currentUserService = currentUserService;
+        _accessor = accessor;
     }
     public async Task<PagedResponse<ProductResponse>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
     {
@@ -48,11 +51,28 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
         
-        var query = _dbContext.Products.AsQueryable();
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
 
-        if (_currentUserService.AdminPosition == "MarketAdmin")
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+        
+        var query = _dbContext.Products.AsNoTracking().AsQueryable();
+
+        if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {
-            query = query.Where(p => p.MarketId == _currentUserService.MarketId);
+            var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdStr == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdStr);
+            
+            query = query.Where(p => p.MarketId == marketId);
+        }
+        else if (request.MarketId.HasValue)
+        {
+            query = query.Where(p => p.MarketId == request.MarketId.Value);
         }
 
         if (request.IsAvailable.HasValue)
@@ -90,6 +110,11 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
         if (request.CategoryIds != null && request.CategoryIds.Length > 0)
         {
             query = query.Where(p => request.CategoryIds.Contains(p.CategoryId));
+        }
+        
+        if (request.ProductIds != null && request.ProductIds.Length > 0)
+        {
+            query = query.Where(p => request.ProductIds.Contains(p.Id));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

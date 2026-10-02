@@ -5,15 +5,39 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Refit;
 using UserService.Api.Middlewares;
 using UserService.Application;
 using UserService.Application.Features.ShopperAssistants.Validators;
 using UserService.Application.Interfaces.Data;
+using UserService.Application.Interfaces.External;
 using UserService.Application.Services;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var allowedOrigins = new List<string>
+{
+    "http://localhost:5173",
+};
+
+var frontendUrl = builder.Configuration["FrontendUrl"];
+if (!string.IsNullOrEmpty(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl);
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins.ToArray())
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -25,6 +49,17 @@ builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddHttpContextAccessor();
+
+var orderServiceUrl =
+    builder.Configuration["Services:OrderServiceUrl"]
+    ?? "https://simple-store-hxxn.onrender.com";
+
+builder.Services.AddRefitClient<IOrderApi>().ConfigureHttpClient(c =>
+{
+    c.BaseAddress = new Uri(orderServiceUrl);
+});
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -92,6 +127,14 @@ builder.Services.AddScoped<IUserServiceDbContext>(provider =>
     provider.GetRequiredService<UserServiceDbContext>());
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<UserServiceDbContext>();
+    dbContext.Database.Migrate();
+}
+
+app.UseCors("ReactFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

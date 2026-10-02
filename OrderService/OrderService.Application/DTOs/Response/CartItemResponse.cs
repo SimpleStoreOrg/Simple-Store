@@ -6,5 +6,5 @@ public class CartItemResponse
     public long ProductId { get; set; }
     public decimal Quantity { get; set; }
     public decimal Price { get; set; }
-    public decimal TotalPrice { get; set; }
+    public decimal TotalItemPrice { get; set; }
 }

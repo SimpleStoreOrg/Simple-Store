@@ -55,7 +55,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
         
-        var query = _dbContext.Orders.AsQueryable();
+        var query = _dbContext.Orders.AsNoTracking().AsQueryable();
         
         if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {
@@ -123,8 +123,9 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
                     ProductId = oi.ProductId,
                     Price = oi.Price,
                     Quantity = oi.Quantity,
-                    TotalPrice = oi.Quantity * oi.Price
+                    TotalItemPrice = oi.Quantity * oi.Price
                 }).ToList(),
+                TotalPrice = o.TotalPrice,
                 PickUpDeadline = o.PickUpDeadline
             }).ToListAsync(cancellationToken);
         

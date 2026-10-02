@@ -6,17 +6,35 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ProductService.Api.Middlewares;
-using ProductService.Api.Services;
 using ProductService.Application;
 using ProductService.Application.Features.Categories.Validators;
 using ProductService.Application.Interfaces.Data;
-using ProductService.Application.Interfaces.External;
-using ProductService.Application.Interfaces.Services;
 using ProductService.Infrastructure;
 using ProductService.Infrastructure.Interceptors;
-using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var allowedOrigins = new List<string>
+{
+    "http://localhost:5173",
+};
+
+var frontendUrl = builder.Configuration["FrontendUrl"];
+if (!string.IsNullOrEmpty(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl);
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins.ToArray())
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -45,7 +63,6 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -77,11 +94,6 @@ builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
 
-builder.Services.AddRefitClient<IMarketApi>().ConfigureHttpClient(c =>
-{
-    c.BaseAddress = new Uri("https://localhost:7004");
-});
-
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyMarker).Assembly));
 
@@ -100,6 +112,14 @@ builder.Services.AddScoped<IProductServiceDbContext>(provider =>
     provider.GetRequiredService<ProductServiceDbContext>());
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ProductServiceDbContext>();
+    dbContext.Database.Migrate();
+}
+
+app.UseCors("ReactFrontend");
 
 if (app.Environment.IsDevelopment())
 {

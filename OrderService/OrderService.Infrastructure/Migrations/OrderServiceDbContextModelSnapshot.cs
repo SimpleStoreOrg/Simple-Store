@@ -39,8 +39,8 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("PickUpDeadline")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -76,6 +76,9 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("TotalItemPrice")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CartEntityId");
@@ -109,6 +112,9 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -128,9 +134,6 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<long>("MarketId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("OrderEntityId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
@@ -143,9 +146,12 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("TotalItemPrice")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderEntityId");
+                    b.HasIndex("OrderId");
 
                     b.ToTable("OrderItems");
                 });
@@ -193,9 +199,13 @@ namespace OrderService.Infrastructure.Migrations
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderItemsEntity", b =>
                 {
-                    b.HasOne("OrderService.Domain.Entities.OrderEntity", null)
+                    b.HasOne("OrderService.Domain.Entities.OrderEntity", "Order")
                         .WithMany("OrderItems")
-                        .HasForeignKey("OrderEntityId");
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.CartEntity", b =>

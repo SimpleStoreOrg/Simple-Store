@@ -56,11 +56,12 @@ public class GetAllCartsQueryHandler : IRequestHandler<GetAllCartsQuery, PagedRe
                 Items = c.CartItems.Select(ci => new CartItemResponse
                 {
                     ProductId = ci.ProductId,
+                    MarketId = ci.MarketId,
                     Price = ci.Price,
                     Quantity = ci.Quantity,
-                    TotalPrice = ci.Quantity * ci.Price
+                    TotalItemPrice = ci.Quantity * ci.Price
                 }).ToList(),
-                PickUpDeadline = c.PickUpDeadline,
+                TotalPrice = c.TotalPrice,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
                 DeletedAt = c.DeletedAt

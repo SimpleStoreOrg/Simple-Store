@@ -21,7 +21,8 @@ public class GetAdminByIdQueryHandler : IRequestHandler<GetAdminByIdQuery, Admin
     }
     public async Task<AdminResponse> Handle(GetAdminByIdQuery request, CancellationToken cancellationToken)
     {
-        var admin = await _dbContext.Admins.FirstOrDefaultAsync(a => a.Id == request.AdminId, cancellationToken);
+        var admin = await _dbContext.Admins.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == request.AdminId, cancellationToken);
         if (admin == null)
         {
             _logger.LogWarning("Admin with ID {Id} not found", request.AdminId);

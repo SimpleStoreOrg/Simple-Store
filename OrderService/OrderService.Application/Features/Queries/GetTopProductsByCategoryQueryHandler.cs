@@ -15,7 +15,9 @@ namespace OrderService.Application.Features.Queries;
 public record GetTopProductsByCategoryQuery(
     int? PageNumber = null,
     int? PageSize = null,
-    long[]? CategoryIds = null)
+    long[]? CategoryIds = null,
+    DateTime? From = null,
+    DateTime? To = null)
     : IRequest<PagedResponse<TopProductsByCategoryResponse>>;
 
 public class
@@ -61,7 +63,7 @@ public class
 
         var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
 
-        var salesQuery = _dbContext.OrderItems.AsQueryable();
+        var salesQuery = _dbContext.OrderItems.AsNoTracking().Include(oi => oi.Order).AsQueryable();
 
         if ((role == "Admin" && adminPosition == "MarketAdmin") || role == "ShopperAssistant")
         {
@@ -75,6 +77,25 @@ public class
             long marketId = long.Parse(marketIdClaim);
 
             salesQuery = salesQuery.Where(oi => oi.MarketId == marketId);
+        }
+        
+        if (!request.From.HasValue && !request.To.HasValue)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            salesQuery = salesQuery.Where(oi =>
+                oi.Order.CreatedAt >= today &&
+                oi.Order.CreatedAt < today.AddDays(1));
+        }
+        
+        if (request.From.HasValue)
+        {
+            salesQuery = salesQuery.Where(oi => oi.Order.CreatedAt >= request.From.Value);
+        }
+
+        if (request.To.HasValue)
+        {
+            salesQuery = salesQuery.Where(oi => oi.Order.CreatedAt <= request.To.Value);
         }
         
         var sales = await salesQuery

@@ -31,7 +31,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
         _logger.LogInformation("Logging to the system");
         var user = await _context.Users.FirstOrDefaultAsync(
             u => u.UserName!.Trim().ToLower() == request.Request.Username!.Trim().ToLower() &&
-                 u.Email!.Trim() == request.Request.Email!.Trim() && u.Role == request.Request.Role,
+                 u.Email!.Trim().ToLower() == request.Request.Email!.Trim().ToLower() && u.Role == request.Request.Role,
             cancellationToken: cancellationToken);
 
         if (user == null)
@@ -62,6 +62,17 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResponse>
             
             adminPosition = admin.Position;
             marketId = admin.MarketId;
+        }
+        else if (user.Role == RoleStatus.ShopperAssistant)
+        {
+            var shopperAssistant =
+                await _context.ShopperAssistants.FirstOrDefaultAsync(s => s.Id == user.Id, cancellationToken);
+            if (shopperAssistant == null)
+            {
+                throw new NotAuthorizedException("ShopperAssistant not found");
+            }
+
+            marketId = shopperAssistant.MarketId;
         }
 
         var accessToken = _jwtService.GenerateToken(user, adminPosition, marketId);

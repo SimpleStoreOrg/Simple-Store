@@ -12,5 +12,6 @@ public class OrderResponse
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
     public IEnumerable<OrderItemResponse> Items { get; set; }
+    public decimal TotalPrice { get; set; }
     public DateTime? PickUpDeadline { get; set; }
 }

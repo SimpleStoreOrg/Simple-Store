@@ -1,3 +1,4 @@
+using OrderService.Application.Common;
 using OrderService.Application.DTOs.External;
 using Refit;
 
@@ -10,4 +11,8 @@ public interface IProductApi
 
     [Put("/api/Product/internal/{id}/stock")]
     Task UpdateStock(long id, UpdateStockRequest request, [Header("Authorization")] string? authorization);
+
+    [Get("/api/Product")]
+    Task<PagedResponse<ProductResponse>> GetAllProducts([Query(CollectionFormat.Multi)]long[] productIds,
+        [Header("Authorization")] string? authorization);
 }

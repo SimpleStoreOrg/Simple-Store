@@ -8,6 +8,7 @@ using OrderService.Application.DTOs.Response;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Domain.Entities;
+using OrderService.Domain.Enums;
 
 namespace OrderService.Application.Features.Commands;
 
@@ -47,8 +48,27 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
         
         if (order == null)
         {
-            _logger.LogWarning("Order with ID {OrderId} not found", order.Id);
-            throw new OrderNotFoundException(order.Id);
+            _logger.LogWarning("Order with ID {OrderId} not found", request.Request.OrderId);
+            throw new OrderNotFoundException(request.Request.OrderId);
+        }
+        
+        if (order.Status != OrderStatus.Completed)
+        {
+            _logger.LogWarning("Order {OrderId} is not completed. Cannot review", request.Request.OrderId);
+            throw new InvalidOrderException("Only completed orders can be reviewed");
+        }
+        
+        var today = DateTime.UtcNow.Date;
+        if (order.CreatedAt.Date != today)
+        {
+            _logger.LogWarning("Order {OrderId} is not from today. Cannot review", request.Request.OrderId);
+            throw new InvalidOrderException("Only today's completed orders can be reviewed");
+        }
+        
+        if (request.Request.Rating < 1 || request.Request.Rating > 5)
+        {
+            _logger.LogWarning("Invalid rating {Rating} for order {OrderId}", request.Request.Rating, request.Request.OrderId);
+            throw new InvalidOrderException("Rating must be between 1 and 5");
         }
 
         var orderItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == request.Request.ProductId);
@@ -61,7 +81,7 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
 
         var reviewed = await _dbContext
             .Reviews.AnyAsync(
-                r => r.OrderId == request.Request.OrderId && r.ProductId == request.Request.ProductId &&
+                r => r.ProductId == request.Request.ProductId &&
                      r.CustomerId == customerId, cancellationToken);
         
         if (reviewed)
@@ -74,6 +94,7 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
         {
             OrderId = request.Request.OrderId,
             ProductId = request.Request.ProductId,
+            MarketId = orderItem.MarketId,
             CustomerId = customerId,
             Rating = request.Request.Rating,
             Message = request.Request.Message
@@ -87,6 +108,7 @@ public class ReviewProductCommandHandler: IRequestHandler<ReviewProductCommand, 
              Id = review.Id,
              OrderId = review.OrderId,
              ProductId = review.ProductId,
+             MarketId = review.MarketId,
              CustomerId = review.CustomerId,
              Rating = review.Rating,
              Message = review.Message,

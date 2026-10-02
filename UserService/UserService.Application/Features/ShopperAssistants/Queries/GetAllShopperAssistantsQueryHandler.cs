@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common;
@@ -18,11 +20,16 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
 {
     private readonly IUserServiceDbContext _dbContext;
     private readonly ILogger<GetAllShopperAssistantsQueryHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public GetAllShopperAssistantsQueryHandler(IUserServiceDbContext dbContext, ILogger<GetAllShopperAssistantsQueryHandler> logger)
+    public GetAllShopperAssistantsQueryHandler(
+        IUserServiceDbContext dbContext,
+        ILogger<GetAllShopperAssistantsQueryHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
     public async Task<PagedResponse<ShopperAssistantResponse>> Handle(GetAllShopperAssistantsQuery request, CancellationToken cancellationToken)
     {
@@ -39,12 +46,30 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
             _logger.LogWarning("Page size {PageSize}, must be greater than 0", request.PageSize);
             throw new IncorrectPaginationException("Page size must be greater than 0.");
         }
+        
+        var role = _accessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
 
-        var query = _dbContext.ShopperAssistants.AsQueryable();
+        var adminPosition = _accessor.HttpContext?.User.FindFirst("AdminPosition")?.Value;
+
+        var query = _dbContext.ShopperAssistants.AsNoTracking().AsQueryable();
+        
+        if (role == "Admin" && adminPosition == "MarketAdmin")
+        {
+            var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
+
+            if (marketIdStr == null)
+            {
+                throw new NotAuthorizedException("Market ID not found.");
+            }
+
+            long marketId = long.Parse(marketIdStr);
+            
+            query = query.Where(s => s.MarketId == marketId);
+        }
 
         if (request.Positions.HasValue)
         {
-            query = query.Where(s => s.Position == request.Positions);
+            query = query.Where(s => s.Position == request.Positions.Value);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -62,6 +87,7 @@ public class GetAllShopperAssistantsQueryHandler : IRequestHandler<GetAllShopper
             .Select(e => new ShopperAssistantResponse
             {
                 Id = e.Id,
+                MarketId = e.MarketId,
                 Name = e.Name,
                 Surname = e.Surname,
                 Role = e.Role,

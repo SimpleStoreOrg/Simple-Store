@@ -1,20 +1,19 @@
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.DTOs.External;
-using OrderService.Application.DTOs.Request;
 using OrderService.Application.DTOs.Response;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
 using OrderService.Application.Interfaces.External;
 using OrderService.Domain.Entities;
 using OrderService.Domain.Enums;
-using Refit;
 
 namespace OrderService.Application.Features.Commands;
 
-public record CreateOrderCommand(CreateOrderRequest Request) : IRequest<OrderResponse>;
+public record CreateOrderCommand : IRequest<OrderResponse>;
 
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, OrderResponse>
 {
@@ -46,98 +45,109 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         
         long customerId = long.Parse(customerIdStr);
         
-        if (request.Request.Items == null || request.Request.Items.Count <= 0)
+        var cart = await _dbContext.Carts
+            .Include(c => c.CartItems)
+            .FirstOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
+
+        if (cart == null)
         {
-            throw new InvalidOrderException("Order must contain at least one item");
+            throw new CartNotFoundException("Cart not found");
         }
 
-        request.Request.Items = request.Request.Items
-            .DistinctBy(e => e.ProductId)
-            .ToList();
-
-        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+        if (cart.CartItems.Count == 0)
+        {
+            throw new CartIsEmptyException();
+        }
         
-        try
+        var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+                
+        var productIds = cart.CartItems.Select(ci => ci.ProductId).ToArray();
+                
+        var productResponse = await _productApi.GetAllProducts(productIds, token);
+                
+        var products = productResponse.Items;
+
+        foreach (var cartItem in cart.CartItems)
         {
-            _logger.LogInformation("Creating order using Customer ID: {CustomerId}", customerId);
-            var order = new OrderEntity
-            {
-                CustomerId = customerId,
-                Status = OrderStatus.New,
-                PickUpDeadline = DateTime.UtcNow.AddHours(5).AddMinutes(30),
-                OrderItems = new List<OrderItemsEntity>()
-            };
-            
-            foreach (var item in request.Request.Items)
-            {
-                if (item.Quantity <= 0)
-                {
-                    _logger.LogWarning("Invalid quantity for product {ProductId}", item.ProductId);
-                    throw new InvalidQuantityException(item.ProductId);
-                }
-                
-                var product = await _productApi.GetProductById(item.ProductId, token);
-                
-                if (item.Quantity > product.Stock)
-                {
-                    _logger.LogWarning("Insufficient stock for product {ProductId}. Available: {Stock}, Requested: {Quantity}",
-                        item.ProductId, product.Stock, item.Quantity);
-                    throw new InsufficientStockException(item.ProductId, product.Stock, item.Quantity);
-                }
+            var product = products.FirstOrDefault(p => p.Id == cartItem.ProductId);
 
-                var orderItems = new OrderItemsEntity
-                {
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    MarketId = product.MarketId,
-                    Quantity = item.Quantity,
-                    Price = product.Price
-                };
-                order.OrderItems.Add(orderItems);
-                
-                _logger.LogInformation("Adding product {ProductId} with quantity {Quantity} to order",
-                    orderItems.ProductId, orderItems.Quantity);
+            if (product == null)
+            {
+                throw new ProductNotFoundException(cartItem.ProductId);
             }
             
-            _logger.LogInformation("Order contains {ItemCount} items", order.OrderItems.Count);
-            
-            foreach (var item in request.Request.Items)
+            if (cartItem.Quantity > product.Stock)
             {
-                await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest
-                    {
-                        Quantity = item.Quantity
-                    }, token);
-            }
-            
-            await _dbContext.Orders.AddAsync(order, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            
-            _logger.LogInformation("Order created successfully with ID: {OrderId}", order.Id);
+                _logger.LogWarning(
+                    "Insufficient stock for product {ProductId}. Available: {Stock}, Requested: {Quantity}",
+                    cartItem.ProductId,
+                    product.Stock,
+                    cartItem.Quantity);
 
-            var response = new OrderResponse
+                throw new InsufficientStockException(
+                    cartItem.ProductId,
+                    product.Stock,
+                    cartItem.Quantity);
+            }
+        }
+                
+        _logger.LogInformation("Creating order using Customer ID: {CustomerId}", customerId);
+
+        var order = new OrderEntity
+        {
+            CustomerId = customerId,
+            Status = OrderStatus.New,
+            OrderItems = new List<OrderItemsEntity>(),
+            PickUpDeadline = DateTime.UtcNow.AddHours(1)
+        };
+        
+        
+        
+        foreach (var cartItem in cart.CartItems)
+        {
+            order.OrderItems.Add(new OrderItemsEntity
             {
-                Id = order.Id,
-                CustomerId = order.CustomerId,
-                Status = order.Status,
-                CreatedAt = order.CreatedAt,
-                Items = order.OrderItems.Select(oi => new OrderItemResponse
+                Order = order,
+                ProductId = cartItem.ProductId,
+                MarketId = cartItem.MarketId,
+                Price = cartItem.Price,
+                Quantity = cartItem.Quantity,
+                TotalItemPrice = cartItem.Price * cartItem.Quantity
+            });
+        }
+        order.TotalPrice = cart.TotalPrice;
+            
+        _dbContext.Carts.Remove(cart);
+        
+        await _dbContext.Orders.AddAsync(order, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+            
+        _logger.LogInformation("Order created successfully with ID: {OrderId}", order.Id);
+        
+        foreach (var item in order.OrderItems)
+        {
+            await _productApi.UpdateStock(item.ProductId, new UpdateStockRequest()
+            {
+                Quantity = item.Quantity
+            }, token);
+        }
+
+        return new OrderResponse
+        {
+            Id = order.Id,
+            CustomerId = order.CustomerId,
+            Items = order.OrderItems
+                .Select(ci => new OrderItemResponse
                 {
-                    MarketId = oi.MarketId,
-                    ProductId = oi.ProductId,
-                    Price = oi.Price,
-                    Quantity = oi.Quantity,
-                    TotalPrice = oi.Quantity * oi.Price
+                    MarketId = ci.MarketId,
+                    ProductId = ci.ProductId,
+                    Price = ci.Price,
+                    Quantity = ci.Quantity,
+                    TotalItemPrice = ci.Quantity * ci.Price
                 }).ToList(),
-                PickUpDeadline = order.PickUpDeadline
-            };
-            return response;
-        }
-        catch (ApiException e)
-        {
-            _logger.LogError(e, 
-                "External service failed. Status code: {StatusCode}",
-                e.StatusCode);
-            throw;
-        }
+            TotalPrice = order.TotalPrice,
+            PickUpDeadline = order.PickUpDeadline,
+            CreatedAt = order.CreatedAt
+        };
     }
 }

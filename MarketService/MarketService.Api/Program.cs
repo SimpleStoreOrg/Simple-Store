@@ -15,6 +15,29 @@ using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = new List<string>
+{
+    "http://localhost:5173",
+};
+
+var frontendUrl = builder.Configuration["FrontendUrl"];
+if (!string.IsNullOrEmpty(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl);
+}
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins.ToArray())
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
@@ -25,9 +48,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateMarketRequestValidator>();
 
+var userServiceUrl =
+    builder.Configuration["Services:UserServiceUrl"]
+    ?? "https://simple-store-production.up.railway.app";
+
 builder.Services.AddRefitClient<IMarketAdminApi>().ConfigureHttpClient(c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7003");
+    c.BaseAddress = new Uri(userServiceUrl);
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -71,12 +98,12 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("AdminPosition", "SuperAdmin");
     });
     
-    options.AddPolicy("CustomerOrSuperAdmin", policy =>
+    options.AddPolicy("CustomerOrAdmin", policy =>
     {
         policy.RequireAssertion(context =>
             context.User.IsInRole("Customer") ||
-            (context.User.IsInRole("Admin") &&
-             context.User.HasClaim("AdminPosition", "SuperAdmin")));
+            context.User.IsInRole("ShopperAssistant") ||
+            context.User.IsInRole("Admin"));
     });
 });
     
@@ -99,6 +126,14 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddScoped<IMarketServiceDbContext>(provider => provider.GetRequiredService<MarketServiceDbContext>());
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<MarketServiceDbContext>();
+    dbContext.Database.Migrate();
+}
+
+app.UseCors("ReactFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

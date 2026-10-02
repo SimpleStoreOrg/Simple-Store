@@ -27,6 +27,6 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> RegisterCustomerAsync(RegisterCustomerRequest request)
     {
         await _mediator.Send(new RegisterCustomerCommand(request));
-        return Ok("Customer created");
+        return NoContent();
     }
 }

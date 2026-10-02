@@ -19,18 +19,18 @@ public class AuditInterceptor : SaveChangesInterceptor
         {
             if (entry.Entity is IHasCreated created && entry.State == EntityState.Added)
             {
-                created.CreatedAt = DateTime.UtcNow.AddHours(5);
+                created.CreatedAt = DateTime.UtcNow;
             }
 
             if (entry.Entity is IHasUpdated updated && entry.State == EntityState.Modified)
             {
-                updated.UpdatedAt = DateTime.UtcNow.AddHours(5);
+                updated.UpdatedAt = DateTime.UtcNow;
             }
 
             if (entry.Entity is IHasDeleted deleted && entry.State == EntityState.Deleted)
             {
                 entry.State = EntityState.Modified;
-                deleted.DeletedAt = DateTime.UtcNow.AddHours(5);
+                deleted.DeletedAt = DateTime.UtcNow;
             }
         }
         return base.SavingChangesAsync(eventData, result, cancellationToken);

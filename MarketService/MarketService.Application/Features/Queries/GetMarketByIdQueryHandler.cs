@@ -22,7 +22,8 @@ public class GetMarketByIdQueryHandler : IRequestHandler<GetMarketByIdQuery, Mar
     
     public async Task<MarketResponse> Handle(GetMarketByIdQuery request, CancellationToken cancellationToken)
     {
-        var market = await _dbContext.Markets.FirstOrDefaultAsync(m => m.Id == request.MarketId, cancellationToken);
+        var market = await _dbContext.Markets.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == request.MarketId, cancellationToken);
 
         if (market == null)
         {

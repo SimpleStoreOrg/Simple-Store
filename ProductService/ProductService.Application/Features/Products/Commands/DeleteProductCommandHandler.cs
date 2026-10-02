@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductService.Application.Exceptions;
@@ -12,19 +13,33 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
 {
     private readonly IProductServiceDbContext _dbContext;
     private readonly ILogger<DeleteProductCommandHandler> _logger;
+    private readonly IHttpContextAccessor _accessor;
 
-    public DeleteProductCommandHandler(IProductServiceDbContext dbContext, ILogger<DeleteProductCommandHandler> logger)
+    public DeleteProductCommandHandler(IProductServiceDbContext dbContext,
+        ILogger<DeleteProductCommandHandler> logger,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _accessor = accessor;
     }
     
     public async Task<bool> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Deleting product with ID: {ProductId}", request.ProductId);
-             
-        var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
+
+        var marketIdStr = _accessor.HttpContext?.User.FindFirst("MarketId")?.Value;
         
+        if (marketIdStr == null)
+        {
+            throw new NotAuthorizedException("Market ID not found");
+        }
+
+        long marketId = long.Parse(marketIdStr);
+
+        var product = await _dbContext.Products
+            .FirstOrDefaultAsync(p => p.MarketId == marketId && p.Id == request.ProductId, cancellationToken);
+
         if (product == null)
         {
             _logger.LogWarning("Product with ID {ProductId} not found", request.ProductId);
