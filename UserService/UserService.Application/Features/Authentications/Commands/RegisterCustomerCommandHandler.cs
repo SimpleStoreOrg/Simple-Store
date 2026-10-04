@@ -41,7 +41,7 @@ public class RegisterCustomerCommandHandler : IRequestHandler<RegisterCustomerCo
                 
         var customer = new CustomerEntity
         {
-            UserName = request.Request.Username!.Trim().ToLower(),
+            UserName = request.Request.Username,
             Email = request.Request.Email!.Trim().ToLower(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Request.Password),
             Role = RoleStatus.Customer
