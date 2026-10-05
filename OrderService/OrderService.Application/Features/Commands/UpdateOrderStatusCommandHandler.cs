@@ -50,8 +50,10 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             throw new InvalidOrderException("Order is cancelled by Shop or Customer");
         }
 
-        if (request.Request.Status == OrderStatus.New || request.Request.Status == OrderStatus.Completed ||
-            request.Request.Status == OrderStatus.CancelledByCustomer || request.Request.Status == OrderStatus.Accepted)
+        if (request.Request.Status == OrderStatus.New || 
+            request.Request.Status == OrderStatus.Completed ||
+            request.Request.Status == OrderStatus.CancelledByCustomer || 
+            request.Request.Status == OrderStatus.Accepted)
         {
             _logger.LogWarning("Requested status cannot be New, Accepted, Completed, and Cancelled by Customer");
             throw new InvalidOrderException("Wrong request");
@@ -68,7 +70,15 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 
         try
         {
+            var previousStatus = order.Status;
+
             order.Status = request.Request.Status;
+
+            if (previousStatus != OrderStatus.Completed && request.Request.Status == OrderStatus.Completed)
+            {
+                _logger.LogInformation("Order {OrderId} completed at: {CompletedAt}", order.Id, order.CompletedAt);
+                order.CompletedAt = DateTime.UtcNow;
+            }
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
         
