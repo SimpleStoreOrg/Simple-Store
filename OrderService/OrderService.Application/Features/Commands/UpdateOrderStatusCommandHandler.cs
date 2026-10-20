@@ -1,8 +1,11 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.DTOs.Request;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
+using OrderService.Application.Interfaces.External;
+using OrderService.Domain.Entities;
 using OrderService.Domain.Enums;
 
 namespace OrderService.Application.Features.Commands;
@@ -13,12 +16,22 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 {
     private readonly IOrderServiceDbContext _dbContext;
     private readonly ILogger<UpdateOrderStatusCommandHandler> _logger;
+    private readonly ICustomerApi _customerApi;
+    private readonly IHttpContextAccessor _accessor;
+    private readonly IEmailService _emailService;
 
-    public UpdateOrderStatusCommandHandler(IOrderServiceDbContext dbContext,
-        ILogger<UpdateOrderStatusCommandHandler> logger)
+    public UpdateOrderStatusCommandHandler(
+        IOrderServiceDbContext dbContext,
+        ILogger<UpdateOrderStatusCommandHandler> logger,
+        IEmailService emailService,
+        ICustomerApi customerApi,
+        IHttpContextAccessor accessor)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _customerApi = customerApi;
+        _emailService = emailService;
+        _accessor = accessor;
     }
     
     public async Task Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -80,12 +93,46 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
                 order.CompletedAt = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync(cancellationToken);
+
+            await TryNotifyCustomerAsync(order, cancellationToken);
         }
         
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    private async Task TryNotifyCustomerAsync(OrderEntity order, CancellationToken cancellationToken)
+    {
+        var notifyFor = new[]
+        {
+            OrderStatus.Collecting, OrderStatus.ReadyToGo, OrderStatus.Completed
+        };
+
+        if (!notifyFor.Contains(order.Status))
+        {
+            return;
+        }
+
+        try
+        {
+            var token = _accessor.HttpContext?.Request.Headers["Authorization"].ToString();
+            var customer = await _customerApi.GetCustomerById(order.CustomerId, token);
+            if (customer == null)
+            {
+                _logger.LogWarning("No email for customer {CustomerId}", order.CustomerId);
+                return;
+            }
+
+            await _emailService.SendStatusEmailAsync(
+                customer.Email, order.Id, order.Status.ToString(), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Order {OrderId} status changed to {Status} but email notification failed",
+                order.Id, order.Status);
         }
     }
 }

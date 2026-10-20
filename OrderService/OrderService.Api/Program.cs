@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OrderService.Api.Middlewares;
+using OrderService.Infrastructure.Services;
 using OrderService.Application;
 using OrderService.Application.Configuration;
 using OrderService.Application.Features.Validators;
@@ -43,6 +44,8 @@ builder.Services.AddCors(options =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 builder.Services.Configure<CustomerCancellationOptions>(builder.Configuration.GetSection("CustomerCancellation"));
+
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
 builder.Services.AddProblemDetails();
