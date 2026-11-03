@@ -116,6 +116,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
                 Status = o.Status,
                 CreatedAt = o.CreatedAt,
                 UpdatedAt = o.UpdatedAt,
+                CompletedAt = o.CompletedAt,
                 DeletedAt = o.DeletedAt,
                 Items = o.OrderItems.Select(oi => new OrderItemResponse
                 {

@@ -38,7 +38,8 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
             throw new OrderAlreadyPaidException(request.OrderId);
         }
 
-        if (order.Status == OrderStatus.New || order.Status == OrderStatus.Accepted ||
+        if (order.Status == OrderStatus.New ||
+            order.Status == OrderStatus.Accepted ||
             order.Status == OrderStatus.Collecting)
         {
             throw new InvalidOrderException("Order must be paid when its status is Ready To Go");
@@ -59,6 +60,7 @@ public class PayOrderCommandHandler : IRequestHandler<PayOrderCommand, PaymentRe
         var change = request.AmountPaid - total;
         
         order.Status = OrderStatus.Completed;
+        order.CompletedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

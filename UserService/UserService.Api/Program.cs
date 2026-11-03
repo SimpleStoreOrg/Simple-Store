@@ -54,7 +54,7 @@ builder.Services.AddHttpContextAccessor();
 
 var orderServiceUrl =
     builder.Configuration["Services:OrderServiceUrl"]
-    ?? "https://simple-store-hxxn.onrender.com";
+    ?? "https://localhost:7001";
 
 builder.Services.AddRefitClient<IOrderApi>().ConfigureHttpClient(c =>
 {

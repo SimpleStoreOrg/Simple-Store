@@ -31,6 +31,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Update="credentials.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\OrderService.Application\OrderService.Application.csproj" />
       <ProjectReference Include="..\OrderService.Infrastructure\OrderService.Infrastructure.csproj" />
     </ItemGroup>

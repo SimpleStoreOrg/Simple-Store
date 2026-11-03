@@ -10,6 +10,7 @@ public class OrderResponse
     public OrderStatus Status { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
     public IEnumerable<OrderItemResponse> Items { get; set; }
     public decimal TotalPrice { get; set; }

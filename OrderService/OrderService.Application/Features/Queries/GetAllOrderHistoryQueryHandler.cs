@@ -96,6 +96,7 @@ public class GetAllOrderHistoryQueryHandler : IRequestHandler<GetAllOrderHistory
                 Status = o.Status,
                 CreatedAt = o.CreatedAt,
                 UpdatedAt = o.UpdatedAt,
+                CompletedAt = o.CompletedAt,
                 Items = o.OrderItems.Select(oi => new OrderItemResponse
                 {
                     MarketId = oi.MarketId,

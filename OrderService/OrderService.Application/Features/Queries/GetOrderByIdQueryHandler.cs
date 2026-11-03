@@ -67,6 +67,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             Status = order.Status,
             CreatedAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
+            CompletedAt = order.CompletedAt,
             DeletedAt = order.DeletedAt,
             Items = order.OrderItems.Select(oi => new OrderItemResponse
             {

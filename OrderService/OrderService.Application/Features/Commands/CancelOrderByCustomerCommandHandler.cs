@@ -3,6 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OrderService.Application.Configuration;
 using OrderService.Application.DTOs.External;
 using OrderService.Application.Exceptions;
 using OrderService.Application.Interfaces.Data;
@@ -19,17 +21,20 @@ public class CancelOrderByCustomerCommandHandler : IRequestHandler<CancelOrderCo
     private readonly ILogger<CancelOrderByCustomerCommandHandler> _logger;
     private readonly IHttpContextAccessor _accessor;
     private readonly IProductApi _productApi;
+    private readonly IOptions<CustomerCancellationOptions> _options;
 
     public CancelOrderByCustomerCommandHandler(
         IOrderServiceDbContext dbContext,
         ILogger<CancelOrderByCustomerCommandHandler> logger,
         IHttpContextAccessor accessor,
-        IProductApi productApi)
+        IProductApi productApi,
+        IOptions<CustomerCancellationOptions> options)
     {
         _dbContext = dbContext;
         _logger = logger;
         _accessor = accessor;
         _productApi = productApi;
+        _options = options;
     }
 
     public async Task Handle(CancelOrderCommand request, CancellationToken cancellationToken)
@@ -52,31 +57,52 @@ public class CancelOrderByCustomerCommandHandler : IRequestHandler<CancelOrderCo
             throw new OrderNotFoundException(request.OrderId);
         }
 
-        var today = DateTime.UtcNow.Date;
-        
-        var completedOrderCount = await _dbContext.Orders.CountAsync(
-            o => o.CustomerId == customerId && 
-                 o.Status == OrderStatus.Completed && 
-                 o.CreatedAt >= today,
-            cancellationToken);
-
-        var canCancelAnyStatus = completedOrderCount >= 5;
-        
-        if (!canCancelAnyStatus)
+        if (order.Status == OrderStatus.Completed)
         {
-            if (order.Status == OrderStatus.Completed)
+            throw new InvalidOrderException("Order is already completed");
+        }
+        
+        if (order.Status == OrderStatus.CancelledByShop || order.Status == OrderStatus.CancelledByCustomer)
+        {
+            throw new InvalidOrderException("Order is cancelled by Shop or Customer");
+        }
+
+        if (order.Status != OrderStatus.New)
+        {
+            var period = _options.Value.CancellationCountPeriod;
+
+            DateTime periodStart;
+
+            if (period.DurationType == 1)
             {
-                throw new OrderAlreadyPaidException(request.OrderId);
+                periodStart = DateTime.UtcNow.Date.AddDays(-(period.Duration - 1));
             }
-            
-            if (order.Status == OrderStatus.CancelledByShop || order.Status == OrderStatus.CancelledByCustomer)
+            else if (period.DurationType == 2)
             {
-                throw new InvalidOrderException("Order is cancelled by Shop or Customer");
+                periodStart = DateTime.UtcNow.Date
+                    .AddDays(-(int)DateTime.UtcNow.DayOfWeek)
+                    .AddDays(-7 * (period.Duration - 1));
+            }
+            else if (period.DurationType == 3)
+            {
+                periodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1)
+                    .AddMonths(-(period.Duration - 1));
+            }
+            else
+            {
+                throw new InvalidOrderException("Invalid customer cancellation period.");
             }
 
-            if (order.Status != OrderStatus.New)
+            var completedOrderCount = await _dbContext.Orders.CountAsync(
+                o => o.CustomerId == customerId &&
+                     o.Status == OrderStatus.Completed &&
+                     o.CompletedAt != null &&
+                     o.CompletedAt >= periodStart,
+                cancellationToken);
+
+            if (completedOrderCount < period.CompletedOrderCount)
             {
-                throw new InvalidOrderException($"Only new orders can be cancelled. Current status: {order.Status}");
+                throw new InvalidOrderException($"Customer needs at least {period.CompletedOrderCount} completed orders");
             }
         }
 
@@ -100,7 +126,6 @@ public class CancelOrderByCustomerCommandHandler : IRequestHandler<CancelOrderCo
             order.Status = OrderStatus.CancelledByCustomer;
             
             await _dbContext.SaveChangesAsync(cancellationToken);
-
         }
         catch(Exception ex)
         {

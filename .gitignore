@@ -27,3 +27,10 @@ dist/
 .vercel
 .env*
 *.bak
+
+# Secrets
+credentials.json
+.tokens/
+
+# Weird Windows-style build folders (accidental)
+**/bin\\*Debug*

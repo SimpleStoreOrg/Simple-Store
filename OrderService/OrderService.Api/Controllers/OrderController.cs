@@ -114,6 +114,13 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(new PayOrderCommand(id, request.AmountPaid));
         return Ok(result);
     }
+    
+    [HttpPost("{id}/reorderpreviousorder")]
+    public async Task<IActionResult> ReorderPreviousOrderAsync(long id)
+    {
+        var result = await _mediator.Send(new ReorderPreviousOrderCommand(id));
+        return Ok(result);
+    }
 
     [Authorize(Roles = "Customer,Admin")]
     [HttpPost("reviewproduct")]
