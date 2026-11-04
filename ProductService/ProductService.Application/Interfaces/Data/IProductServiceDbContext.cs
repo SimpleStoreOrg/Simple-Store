@@ -7,5 +7,6 @@ public interface IProductServiceDbContext
 {
     public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<ProductEntity> Products { get; set; }
+    public DbSet<CategoryCreationRequestEntity> CategoryCreationRequests { get; set; }
     Task<int> SaveChangesAsync(CancellationToken token);
 }

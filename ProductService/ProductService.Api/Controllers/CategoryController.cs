@@ -6,6 +6,7 @@ using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Features.Categories.Commands;
 using ProductService.Application.Features.Categories.Queries;
+using ProductService.Application.Features.CategoryCreationRequests.Commands;
 
 namespace ProductService.Api.Controllers;
 [ApiController]
@@ -49,6 +50,14 @@ public class CategoryController : ControllerBase
     public async Task<IActionResult> CreateCategoryAsync(CreateCategoryRequest request)
     {
         var result = await _mediator.Send(new CreateCategoryCommand(request));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost("categorycreationrequest")]
+    public async Task<IActionResult> CreateCategoryCreationRequestAsync(CreateCategoryRequestRequest request)
+    {
+        var result = await _mediator.Send(new CreateCategoryCreationRequestCommand(request));
         return Ok(result);
     }
     
