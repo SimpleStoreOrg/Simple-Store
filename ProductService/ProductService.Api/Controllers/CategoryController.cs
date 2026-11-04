@@ -61,6 +61,22 @@ public class CategoryController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{id}/approvecategorycreationrequest")]
+    public async Task<IActionResult> ApproveCategoryCreationRequestAsync(long id)
+    {
+        var result = await _mediator.Send(new ApproveCategoryCreationRequestCommand(id));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{id}/rejectcategorycreationrequest")]
+    public async Task<IActionResult> RejectCategoryCreationRequestAsync(long id, string rejectReason)
+    {
+        var result = await _mediator.Send(new RejectCategoryCreationRequestCommand(id, rejectReason));
+        return Ok(result);
+    }
+    
     [Authorize(Policy = "SuperAdmin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCategoryAsync(int id, UpdateCategoryRequest request)
