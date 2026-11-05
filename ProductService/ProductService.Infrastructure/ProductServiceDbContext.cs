@@ -20,10 +20,14 @@ public class ProductServiceDbContext : DbContext, IProductServiceDbContext
 
         modelBuilder.Entity<ProductEntity>()
             .HasQueryFilter(x => x.DeletedAt == null);
+
+        modelBuilder.Entity<CategoryCreationRequestEntity>()
+            .HasQueryFilter(x => x.DeletedAt == null);
         
         base.OnModelCreating(modelBuilder);
     }
 
     public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<ProductEntity> Products { get; set; }
+    public DbSet<CategoryCreationRequestEntity> CategoryCreationRequests { get; set; }
 }

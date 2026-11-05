@@ -6,6 +6,9 @@ using ProductService.Application.DTOs.Request;
 using ProductService.Application.DTOs.Response;
 using ProductService.Application.Features.Categories.Commands;
 using ProductService.Application.Features.Categories.Queries;
+using ProductService.Application.Features.CategoryCreationRequests.Commands;
+using ProductService.Application.Features.CategoryCreationRequests.Queries;
+using ProductService.Domain.Enums;
 
 namespace ProductService.Api.Controllers;
 [ApiController]
@@ -31,8 +34,13 @@ public class CategoryController : ControllerBase
         [FromQuery] long[]? parentCategoryIds)
     {
         var result =
-            await _mediator.Send(new GetAllCategoriesQuery(pageNumber, pageSize, categoryName, createdAtFrom,
-                createdAtTo, parentCategoryIds));
+            await _mediator.Send(new GetAllCategoriesQuery(
+                pageNumber,
+                pageSize,
+                categoryName,
+                createdAtFrom,
+                createdAtTo,
+                parentCategoryIds));
         return Ok(result);
     }
     
@@ -49,6 +57,56 @@ public class CategoryController : ControllerBase
     public async Task<IActionResult> CreateCategoryAsync(CreateCategoryRequest request)
     {
         var result = await _mediator.Send(new CreateCategoryCommand(request));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpGet("getallrequestedcategories")]
+    public async Task<ActionResult<PagedResponse<CategoryResponse>>> GetAllCategoryCreationRequestsAsync(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        [FromQuery] CategoryRequestStatus? status,
+        [FromQuery] DateTime? createdAtFrom,
+        [FromQuery] DateTime? createdAtTo)
+    {
+        var result = await _mediator.Send(new GetAllCategoryCreationRequestsQuery(
+                pageNumber,
+                pageSize,
+                status,
+                createdAtFrom,
+                createdAtTo));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpGet("{id}/getrequestedcategorybyid")]
+    public async Task<IActionResult> GetRequestedCategoryByIdAsync(long id)
+    {
+        var result = await _mediator.Send(new GetCategoryCreationRequestByIdQuery(id));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost("categorycreationrequest")]
+    public async Task<IActionResult> CreateCategoryCreationRequestAsync(CreateCategoryRequestRequest request)
+    {
+        var result = await _mediator.Send(new CreateCategoryCreationRequestCommand(request));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{id}/approvecategorycreationrequest")]
+    public async Task<IActionResult> ApproveCategoryCreationRequestAsync(long id)
+    {
+        var result = await _mediator.Send(new ApproveCategoryCreationRequestCommand(id));
+        return Ok(result);
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{id}/rejectcategorycreationrequest")]
+    public async Task<IActionResult> RejectCategoryCreationRequestAsync(long id, string rejectReason)
+    {
+        var result = await _mediator.Send(new RejectCategoryCreationRequestCommand(id, rejectReason));
         return Ok(result);
     }
     
